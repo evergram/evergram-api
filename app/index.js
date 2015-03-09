@@ -47,7 +47,7 @@ app.use(passport.session());
 app.use(require('./routes.js'));
 
 //init db
-common.db.init();
+common.db.connect();
 
 //ensure instagram passport auth strategy is instantiated
 common.instagram.initAuthStrategy();
