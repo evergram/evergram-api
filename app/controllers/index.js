@@ -3,9 +3,9 @@
  */
 
 function Controllers() {
-    return {
-        users: require('./users')
-    };
+    
+    this.UserController = require('./users')
+    
 }
 
 module.exports = exports = new Controllers();
