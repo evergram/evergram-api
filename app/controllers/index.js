@@ -4,7 +4,7 @@
 
 function Controllers() {
     
-    this.UserController = require('./users')
+    this.users = require('./users')
     
 }
 

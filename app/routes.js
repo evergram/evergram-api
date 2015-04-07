@@ -5,6 +5,7 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
+var common = require('evergram-common');
 var controllers = require('./controllers');
 
 /**
@@ -15,29 +16,53 @@ router.get('/', function (req, res) {
 });
 /**
  * Instagram auth
- * ISSUE: BY REDIRECTING TO CALLBACK WHEN DONE, WE LOOSE KNOWLEDGE OF WHO THE CALLER WAS (E.G. SQUARESPACE) SO HOW CAN WE RETURN SUCCESS?
- * - OPTION: keep using OAuth.io for auth, and only use creataccount endpoint to save data (same as current process)
- * - OPTION: keep using OAuth.io for auth, on page load of step 2 save auth data using a createUser (or something) end point and 
- *           then use a second endpoint to save data once user has completed step 2.
- *  Q. Do we get enough data from OAuth.io for what we need? Might need to make additional calls to IG from our endpoint to get additional user data
  */
-router.get('/user/auth/instagram', passport.authenticate('instagram', {
-    failureRedirect: '/error'	// ???? does this even do anything???
+router.get('/user/auth/instagram', function(req, res, next) {
+	  // allows us to pass through any querystring params
+	req.session.params = serializeQueryString(req.query);
+	console.log("querystring=" + req.session.params);
+	next();
+	}, passport.authenticate('instagram', {
+		failureRedirect: common.config.instagram.redirect.fail
 }));
 
 router.get('/user/auth/instagram/callback', passport.authenticate('instagram', {
-    failureRedirect: '/error'
-}), controllers.users.saveAuthentication);
+    failureRedirect: common.config.instagram.redirect.fail
+	})
+	, function(req, res) {
 
+	  // remember user object for session.
+	  req.session.userid = req.user.id;
+
+	  // append any querystring params that were passed
+	  var params = req.session.params;
+	  delete req.session.params;
+	  console.log("querystring post callback=" + params);
+	  res.redirect(common.config.instagram.redirect.success + params);
+});
+
+/* 
+ * Used to serialize the querystring so we can pass via the session to the callback
+ */
+function serializeQueryString( obj ) {
+  return '?'+Object.keys(obj).reduce(function(a,k){a.push(k+'='+encodeURIComponent(obj[k]));return a},[]).join('&')
+}
 
 /**
  * Squarespace Signup/Registration
  */
 
 
-router.get('/user/signup/create-account', function(req, res) {
-	controllers.users.createAccount(req, res);
+router.post('/user/', function(req, res) {
+	controllers.users.saveAccountDetails(req.session.userid, req, res);
 });
+
+/*
+ * Not needed yet but might be in future.
+ */
+/*router.get('/user/', function(req, res) {
+	controllers.users.findUser(req, res);
+});*/
 
 
 /**

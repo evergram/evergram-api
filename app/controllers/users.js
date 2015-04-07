@@ -5,8 +5,10 @@
 
 var Q = require('q');
 var common = require('evergram-common');
+var userMapper = common.mapper;
 var userManager = common.user.manager;
 var paymentManager = common.payments.manager;
+var logger = common.utils.logger;
 
 /**
  * Module dependencies.
@@ -26,45 +28,107 @@ UserController.prototype.login = function (req, res) {
  *
  * 	NOT CURRENTLY USED.
  */
-UserController.prototype.saveAuthentication = function(user, info, req, res) {
+UserController.prototype.saveAuth = function(req, res) {
 
-	res.send("Saved Auth data");
 }
 
 
 /**
  *	Validate data and create a user using evergram-common.userManager & save card details using evergram-common.paymentManager
  */
-UserController.prototype.createAccount = function(req, res) {
+UserController.prototype.saveAccountDetails = function(userid, req, res) {
 
-	res.send("Created account");
-/*
+	/*
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
- 	//var deferred = Q.defer();
+ 	*/
 
  	// verify we have good data in request
-	//if (!!req.Body && !!req.Body.id) {
-    //	var id = req.Body.id;
+	// validate the input
+	req.checkBody('stripeToken', 'A Stripe token is required').notEmpty();
+	req.checkBody('plan', 'Plan ID is required').notEmpty();
+	//req.checkBody('instagram_id', 'Instagram username is required').notEmpty();
+	//req.checkBody('instagram_accesstoken', 'Instagram access-token is required').notEmpty();
+	req.checkBody('fname', 'First name is required').notEmpty();
+	req.checkBody('lname', 'Last name is required').notEmpty();
+	req.checkBody('email', 'Email is required').notEmpty();
+	req.checkBody('email', 'Invalid email address').isEmail();
+	req.checkBody('address', 'Street address is required').notEmpty();
+	req.checkBody('city', 'City or suburb is required').notEmpty();
+	req.checkBody('state', 'State is required').notEmpty();
+	req.checkBody('postcode', 'Postcode is required').notEmpty();
+	req.checkBody('country', 'Country is required').notEmpty();
 
- 	// verify if user exists???
- 	var userData = JSON.parse(req.Body);
- 	
- 	// create user
- 	var user = userManager.create(data);
 
- 	// create billing record
- 	paymentManager.createCustomer(req.body.stripeToken, user)
- 	.then(function(stripeResponse){
- 		userManage.update(user.id, { "billing.stripeID" : stripeResponse.id });		// update user record with StripeID
- 	}).then( function(success) {
- 		res.status(200).send("Customer successfully created.");
+	// check the validation object for errors
+	var errors = req.validationErrors();
+
+	if( errors ) {
+		res.status(400).send(errors);
+		return;
+	}
+
+	// check if user exists
+	userManager.findUser({ "id" : userid }).then(function (user) {
+        console.log("** USER SIGNUP **: Start");
+        if (user) {
+        	console.log("** USER SIGNUP **: Customer " + user.id + " found");
+
+        	user.firstName = req.body.fname;
+    		user.lastName = req.body.lname;
+    		user.email = req.body.email;
+    		user.address.line1 = req.body.address;
+	    	user.address.suburb = req.body.city;
+	    	user.address.state = req.body.state;
+	    	user.address.postcode = req.body.postcode;
+	    	user.address.country = req.body.country;
+	    	user.billing.options = req.body.plan;
+    		
+
+        	// update user's address details
+        	userManager.update(user)
+        	.then( function(success) {
+	 		
+	 			console.log("** USER SIGNUP **: Customer " + user.id + " address and account details updated.");
+	 			logger.info("** USER SIGNUP **: Customer " + user.id + " address and account details updated.");
+
+	 			// create billing record
+			 	paymentManager.createCustomer(req.body.stripeToken, user)
+			 	.then(function(stripeResponse) {
+
+			 		console.log("** USER SIGNUP **: Customer " + user.id + " added to Stripe (" + stripeResponse.id + ").");
+			 		logger.info("** USER SIGNUP **: Customer " + user.id + " added to Stripe (" + stripeResponse.id + ").");
+
+			 		user.billing.stripeID = stripeResponse.id;
+			 		user.active = true;
+
+					// update user record with StripeID
+			 		userManager.update(user)
+			 		.then(function(success) {
+			 			logger.info("** USER SIGNUP **: Customer " + user.id + " successfully updated.");
+			 			res.status(200).send("Customer " + user.id + " successfully updated.");
+			 		});
+			 	}).fail( function(err) {
+			 		logger.error("** USER SIGNUP **: ERROR: " + err);
+			 		res.status(400).send(err);
+ 				});
+			}).fail( function(err) {
+		 		console.log("** USER SIGNUP **: ERROR: " + err);
+		 		logger.error("** USER SIGNUP **: ERROR: " + err);
+		 		res.status(400).send(err);
+ 			});
+		} else {
+			//something has gone wrong and the user hasn't saved from auth step. Redirect to error page.
+			logger.error("** USER SIGNUP **: ERROR: User " + user.id + " not found. Account information couldn't be updated.");
+			res.redirect( common.config.instagram.redirect.fail );
+		}
+
  	}).fail( function(err) {
  		res.status(400).send(err);
- 	})
+	});
 
-    //return deferred.promise;
-*/
+	// create user
+	//res.status(200).send("Customer successfully created.");
 }
 
 
