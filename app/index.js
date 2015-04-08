@@ -32,6 +32,7 @@ app.use(methodOverride());
 app.use(cookieParser());
 app.use(cookieSession({secret: 'secret'}));
 app.use(session({
+	path: '/',
     resave: true,
     saveUninitialized: true,
     secret: 'evergram',

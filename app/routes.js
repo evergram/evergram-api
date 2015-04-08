@@ -20,7 +20,6 @@ router.get('/', function (req, res) {
 router.get('/user/auth/instagram', function(req, res, next) {
 	  // allows us to pass through any querystring params
 	req.session.params = serializeQueryString(req.query);
-	console.log("querystring=" + req.session.params);
 	next();
 	}, passport.authenticate('instagram', {
 		failureRedirect: common.config.instagram.redirect.fail
@@ -31,12 +30,12 @@ router.get('/user/auth/instagram/callback', passport.authenticate('instagram', {
 	})
 	, function(req, res) {
 
-		console.log("session id = " + req.session.userid)
+	  console.log("session id = " + req.session.userid)
 	  // remember user object for session.
 	  req.session.userid = req.user._id;
 
 	  // append any querystring params that were passed
-	  var params = req.session.params;
+	  var params = req.session.params + "&id=" + req.session.userid;
 	  delete req.session.params;
 	  console.log("querystring post callback=" + params);
 	  res.redirect(common.config.instagram.redirect.success + params);
@@ -52,11 +51,9 @@ function serializeQueryString( obj ) {
 /**
  * Squarespace Signup/Registration
  */
-
-
-router.post('/user/', function(req, res) {
-	console.log("session id = " + req.session.userid)
-	controllers.users.saveAccountDetails(req.session.userid, req, res);
+router.post('/user/:id', function(req, res) {
+	console.log("session id = " + req.params.id)
+	controllers.users.saveAccountDetails(req.params.id, req, res);
 });
 
 /*
