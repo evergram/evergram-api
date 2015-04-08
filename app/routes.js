@@ -31,8 +31,9 @@ router.get('/user/auth/instagram/callback', passport.authenticate('instagram', {
 	})
 	, function(req, res) {
 
+		console.log("session id = " + req.session.userid)
 	  // remember user object for session.
-	  req.session.userid = req.user.id;
+	  req.session.userid = req.user._id;
 
 	  // append any querystring params that were passed
 	  var params = req.session.params;
@@ -54,6 +55,7 @@ function serializeQueryString( obj ) {
 
 
 router.post('/user/', function(req, res) {
+	console.log("session id = " + req.session.userid)
 	controllers.users.saveAccountDetails(req.session.userid, req, res);
 });
 
