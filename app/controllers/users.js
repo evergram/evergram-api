@@ -73,8 +73,8 @@ UserController.prototype.saveAccountDetails = function(userid, req, res) {
 
 
 	// check if user exists
-	userManager.findUser({ "_id" : userid }).then(function (user) {
-        logger.info("** USER SIGNUP **: Start");
+	userManager.findUser({ criteria:{ "_id" : userid }} ).then(function (user) {
+        logger.info("** USER SIGNUP **: Start step 2: _id = " + userid);
         if (user) {
         	logger.info("** USER SIGNUP **: Customer " + user.id + " found");
 

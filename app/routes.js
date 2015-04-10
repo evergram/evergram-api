@@ -7,6 +7,7 @@ var router = express.Router();
 var passport = require('passport');
 var common = require('evergram-common');
 var controllers = require('./controllers');
+var logger = common.utils.logger;
 
 /**
  * General
@@ -18,7 +19,9 @@ router.get('/', function (req, res) {
  * Instagram auth
  */
 router.get('/user/auth/instagram', function(req, res, next) {
-	  // allows us to pass through any querystring params
+	
+	logger.info("** USER SIGNUP **: Start Instagram Auth");
+	// allows us to pass through any querystring params
 	req.session.params = serializeQueryString(req.query);
 	next();
 	}, passport.authenticate('instagram', {
@@ -30,14 +33,15 @@ router.get('/user/auth/instagram/callback', passport.authenticate('instagram', {
 	})
 	, function(req, res) {
 
-	  console.log("session id = " + req.session.userid)
+	  logger.info("** USER SIGNUP **: Instagram Auth complete for " + req.user.instagram.username + " (id: " + req.user._id + ")");
+
 	  // remember user object for session.
 	  req.session.userid = req.user._id;
 
 	  // append any querystring params that were passed
 	  var params = req.session.params + "&id=" + req.session.userid;
 	  delete req.session.params;
-	  console.log("querystring post callback=" + params);
+
 	  res.redirect(common.config.instagram.redirect.success + params);
 });
 
@@ -52,7 +56,6 @@ function serializeQueryString( obj ) {
  * Squarespace Signup/Registration
  */
 router.post('/user/:id', function(req, res) {
-	console.log("session id = " + req.params.id)
 	controllers.users.saveAccountDetails(req.params.id, req, res);
 });
 
