@@ -5,6 +5,7 @@
 var express = require('express');
 var common = require('evergram-common');
 var session = require('express-session');
+var validator = require('express-validator');
 var compression = require('compression');
 var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session');
@@ -23,6 +24,7 @@ app.use(compression({
 
 // bodyParser should be above methodOverride
 app.use(bodyParser.json());
+app.use(validator());		// line must follow directly after bodyParser initialisation
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(methodOverride());
 
@@ -30,6 +32,7 @@ app.use(methodOverride());
 app.use(cookieParser());
 app.use(cookieSession({secret: 'secret'}));
 app.use(session({
+	path: '/',
     resave: true,
     saveUninitialized: true,
     secret: 'evergram',
