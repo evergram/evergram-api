@@ -2,7 +2,6 @@
  * @author Richard O'Brien <richard@stichmade.com>
  */
 
-var Q = require('q');
 var common = require('evergram-common');
 var userMapper = common.mapper;
 var userManager = common.user.manager;
