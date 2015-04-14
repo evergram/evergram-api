@@ -119,7 +119,9 @@ UserController.prototype.saveAccountDetails = function (userId, req, res) {
                     });
                 }).fail(function (err) {
                     logger.error("Create Stripe customer: " + err);
-                    res.status(400).send(err);
+                    //form into same structure as express-validator
+                    var stripeError = [ { param : err.param, msg : err.message, value : ""} ];
+                    res.status(400).send(stripeError);
                 });
             }).fail(function (err) {
                 logger.error("Saving account details: " + err);
