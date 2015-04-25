@@ -11,7 +11,7 @@ var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
-var mongoStore = require('connect-mongo')(session);
+var MongoStore = require('connect-mongo')(session);
 
 var passport = require('passport');
 
@@ -24,7 +24,9 @@ app.use(compression({
 
 // bodyParser should be above methodOverride
 app.use(bodyParser.json());
-app.use(validator());		// line must follow directly after bodyParser initialisation
+
+// line must follow directly after bodyParser initialisation
+app.use(validator());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(methodOverride());
 
@@ -32,11 +34,11 @@ app.use(methodOverride());
 app.use(cookieParser());
 app.use(cookieSession({secret: 'secret'}));
 app.use(session({
-	path: '/',
+    path: '/',
     resave: true,
     saveUninitialized: true,
     secret: 'evergram',
-    store: new mongoStore({
+    store: new MongoStore({
         url: common.config.db,
         collection: 'sessions'
     })
