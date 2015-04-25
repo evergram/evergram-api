@@ -46,10 +46,8 @@ router.get('/user/auth/instagram/callback', passport.authenticate('instagram', {
     var params = req.session.params + '&id=' + req.session.userid;
     delete req.session.params;
 
-    trackingManager.trackConnectedService(req.user, 'Instagram').
-        then(function() {
-            res.redirect(common.config.instagram.redirect.success + params);
-        });
+    trackingManager.trackConnectedService(req.user, 'Instagram');
+    res.redirect(common.config.instagram.redirect.success + params);
 });
 
 /**

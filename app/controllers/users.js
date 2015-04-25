@@ -4,6 +4,7 @@
 
 var common = require('evergram-common');
 var trackingManager = require('../tracking');
+var userMapper = common.mapper;
 var userManager = common.user.manager;
 var paymentManager = common.payments.manager;
 var logger = common.utils.logger;
@@ -110,17 +111,22 @@ UserController.prototype.saveAccountDetails = function(userId, req, res) {
                             user.signupComplete = true;
 
                             // update user record with StripeID
-                            userManager.update(user)
-                                .then(function() {
-                                    return trackingManager.trackSignedUp(user);
-                                }).
+                            userManager.update(user).
                                 then(function() {
+                                    trackingManager.trackSignedUp(user);
                                     logger.info('Customer ' + user.id + ' signup complete.');
                                     res.status(204).send();
                                 });
                         }).fail(function(err) {
                             logger.error('Create Stripe customer: ' + err);
-                            res.status(400).send(err);
+
+                            //form into same structure as express-validator
+                            var stripeError = [{
+                                param: err.param,
+                                msg: err.message,
+                                value: ''
+                            }];
+                            res.status(400).send(stripeError);
                         });
                 }).fail(function(err) {
                     logger.error('Saving account details: ' + err);
