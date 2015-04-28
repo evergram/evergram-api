@@ -46,8 +46,14 @@ router.get('/user/auth/instagram/callback', passport.authenticate('instagram', {
     var params = req.session.params + '&id=' + req.session.userid;
     delete req.session.params;
 
-    trackingManager.trackConnectedService(req.user, 'Instagram');
-    res.redirect(common.config.instagram.redirect.success + params);
+    //if signup is already complete, redirect to the re-auth page.
+    //TODO make all these redirects a little more obvious.
+    if (!!req.user.signupComplete) {
+        res.redirect(common.config.instagram.redirect.reauth);
+    } else {
+        trackingManager.trackConnectedService(req.user, 'Instagram');
+        res.redirect(common.config.instagram.redirect.success + params);
+    }
 });
 
 /**
