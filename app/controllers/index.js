@@ -3,6 +3,7 @@
  */
 
 function Controllers() {
+    this.authentication = require('./authentication');
     this.users = require('./users');
 }
 

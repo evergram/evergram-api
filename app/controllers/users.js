@@ -4,7 +4,6 @@
 
 var common = require('evergram-common');
 var trackingManager = require('../tracking');
-var userMapper = common.mapper;
 var userManager = common.user.manager;
 var paymentManager = common.payments.manager;
 var logger = common.utils.logger;
@@ -17,20 +16,6 @@ var UserController = function() {
     //constructor does nothing
 };
 
-UserController.prototype.login = function(req, res) {
-    res.status(200).send('sign in 1');
-};
-
-/**
- *    Validate data and create a user using evergram-common.userManager & save card details using
- * evergram-common.paymentManager
- *
- *    NOT CURRENTLY USED.
- */
-UserController.prototype.saveAuth = function(req, res) {
-
-};
-
 /**
  * Gets all users.
  *
@@ -38,27 +23,116 @@ UserController.prototype.saveAuth = function(req, res) {
  * @param res
  */
 UserController.prototype.getList = function(req, res) {
-
+    res.status(204).send();
 };
 
 /**
- *    Validate data and create a user using evergram-common.userManager & save card details using
- * evergram-common.paymentManager
+ *
+ * @param req
+ * @param res
  */
-UserController.prototype.saveAccountDetails = function(userId, req, res) {
-    //TODO move this to express middleware. We should allow x-domain on our api
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+UserController.prototype.get = function(req, res) {
+    validateUserId(req, res);
+    res.status(204).send();
+};
 
-    if (!userId) {
+/**
+ *
+ * @param req
+ * @param res
+ */
+UserController.prototype.create = function(req, res) {
+    res.status(204).send();
+};
+
+/**
+ * @deprecated
+ *
+ * This is now deprecated since it not only updates the user but it creates a user in stripe.
+ * We should only update a user.
+ */
+UserController.prototype.updateLegacy = function(req, res) {
+    validateUserId(req, res);
+    validateUserDetails(req, res);
+    validateStripeToken(req, res);
+
+    // check if user exists
+    getUser(req.params.id).
+        then(function(user) {
+            return updateUser(user, req.body);
+        }).
+        then(function(user) {
+            //TODO Having this here isn't RESTful
+            return createPaymentCustomer(user, req.body.stripeToken);
+        }).
+        then(function() {
+            res.status(204).send();
+        }).
+        fail(function(err) {
+            res.status(400).send(err);
+        });
+};
+
+/**
+ *
+ * @param req
+ * @param res
+ */
+UserController.prototype.createPayment = function(req, res) {
+    validateUserId(req, res);
+    validateStripeToken(req, res);
+
+    // check if user exists
+    getUser(req.params.id).
+        then(function(user) {
+            return createPaymentCustomer(user, req.body.stripeToken);
+        }).
+        then(function() {
+            res.status(204).send();
+        }).
+        fail(function(err) {
+            res.status(400).send(err);
+        });
+};
+
+/**
+ *
+ * @param userId
+ * @param req
+ * @param res
+ */
+function validateUserId(req, res) {
+    if (!req.params.id) {
         logger.error('Database User _id not present. ');
         res.status(400).send('Database User _id not present.');
         return;
     }
+}
 
+/**
+ *
+ * @param req
+ * @param res
+ */
+function validateStripeToken(req, res) {
+    req.checkBody('stripeToken', 'A Stripe token is required').notEmpty();
+
+    // check the validation object for errors
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+        return;
+    }
+}
+
+/**
+ *
+ * @param req
+ * @param res
+ */
+function validateUserDetails(req, res) {
     // verify we have good data in request
     // validate the input
-    req.checkBody('stripeToken', 'A Stripe token is required').notEmpty();
     req.checkBody('plan', 'Plan ID is required').notEmpty();
     req.checkBody('fname', 'First name is required').notEmpty();
     req.checkBody('lname', 'Last name is required').notEmpty();
@@ -72,79 +146,94 @@ UserController.prototype.saveAccountDetails = function(userId, req, res) {
 
     // check the validation object for errors
     var errors = req.validationErrors();
-
     if (errors) {
         res.status(400).send(errors);
         return;
     }
+}
 
-    // check if user exists
-    userManager.find({criteria: {_id: userId}}).then(function(user) {
-        logger.info('Start step 2: _id = ' + userId);
-        if (user) {
-            logger.info('Customer ' + user.id + ' found');
+/**
+ * @deprecated
+ *
+ * This not only creates a customer in Stripe, but also triggers a "tracked" sign up call.
+ * We should refactor the sign up process into a much more RESTful one.
+ *
+ * @param user
+ * @param stripeToken
+ * @returns {*|Progress|promise|*|q.promise}
+ */
+function createPaymentCustomer(user, stripeToken) {
+    // create billing record
+    return paymentManager.createCustomer(user, stripeToken)
+        .then(function(stripeResponse) {
+            logger.info('Customer successfully added to Stripe (' + stripeResponse.id + ', ' + user.billing.option +
+            ')');
 
-            user.firstName = req.body.fname;
-            user.lastName = req.body.lname;
-            user.email = req.body.email;
-            user.address.line1 = req.body.address;
-            user.address.suburb = req.body.city;
-            user.address.state = req.body.state;
-            user.address.postcode = req.body.postcode;
-            user.address.country = req.body.country;
-            user.billing.option = req.body.plan;
+            user.billing.stripeId = stripeResponse.id;
+            user.signupComplete = true;
 
-            //TODO Flatten out this structure and turn these into testable blocks of code.
-            // update user's address details
-            userManager.update(user)
-                .then(function() {
-                    logger.info('Customer ' + user.id + ' address and account details updated.');
+            // update user record with StripeID
+            return userManager.update(user);
+        }).
+        then(function() {
+            trackingManager.trackSignedUp(user);
+            logger.info('Customer ' + user.id + ' signup complete.');
+        }).
+        fail(function(err) {
+            logger.error('Create Stripe customer: ' + err);
 
-                    // create billing record
-                    paymentManager.createCustomer(user, req.body.stripeToken)
-                        .then(function(stripeResponse) {
+            //form into same structure as express-validator
+            return {
+                param: err.param,
+                msg: err.message,
+                value: ''
+            };
+        });
+}
 
-                            logger.info('Customer successfully added to Stripe (' + stripeResponse.id + ', ' +
-                            user.billing.option + ')');
+/**
+ *
+ * @param user
+ * @param data
+ * @returns {*|Progress|promise|*|q.promise}
+ */
+function updateUser(user, data) {
+    logger.info('Customer ' + user.id + ' found');
 
-                            user.billing.stripeId = stripeResponse.id;
-                            user.signupComplete = true;
+    user.firstName = data.fname;
+    user.lastName = data.lname;
+    user.email = data.email;
+    user.address.line1 = data.address;
+    user.address.suburb = data.city;
+    user.address.state = data.state;
+    user.address.postcode = data.postcode;
+    user.address.country = data.country;
+    user.billing.option = data.plan;
 
-                            // update user record with StripeID
-                            userManager.update(user).
-                                then(function() {
-                                    trackingManager.trackSignedUp(user);
-                                    logger.info('Customer ' + user.id + ' signup complete.');
-                                    res.status(204).send();
-                                });
-                        }).fail(function(err) {
-                            logger.error('Create Stripe customer: ' + err);
+    return userManager.update(user);
+}
 
-                            //form into same structure as express-validator
-                            var stripeError = [{
-                                param: err.param,
-                                msg: err.message,
-                                value: ''
-                            }];
-                            res.status(400).send(stripeError);
-                        });
-                }).fail(function(err) {
-                    logger.error('Saving account details: ' + err);
-                    res.status(400).send(err);
-                });
-        } else {
-            //something has gone wrong and the user hasn't saved from auth step. Redirect to error page.
-            logger.error('User ' + user.id + ' not found. Account information couldn\'t be updated.');
-            res.redirect(common.config.instagram.redirect.fail);
-        }
+/**
+ *
+ * @param userId
+ * @returns {*|Progress|promise|*|q.promise}
+ */
+function getUser(userId) {
+    logger.info('Start step 2: _id = ' + userId);
 
-    }).fail(function(err) {
-        res.status(400).send(err);
-    });
-};
+    return userManager.find({criteria: {_id: userId}}).
+        then(function(user) {
+            logger.info('Customer ' + user.id + ' address and account details updated.');
+            return user;
+        }).
+        fail(function(err) {
+            logger.error('Saving account details: ' + err);
+            return err;
+        });
+}
 
 /**
  * Expose
  * @type {UserController}
  */
-module.exports = exports = new UserController;
+module.exports = exports = new UserController();
