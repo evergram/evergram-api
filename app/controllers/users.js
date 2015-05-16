@@ -2,6 +2,7 @@
  * @author Richard O'Brien <richard@stichmade.com>
  */
 
+var _ = require('lodash');
 var common = require('evergram-common');
 var trackingManager = require('../tracking');
 var userManager = common.user.manager;
@@ -32,7 +33,7 @@ UserController.prototype.getList = function(req, res) {
  * @param res
  */
 UserController.prototype.get = function(req, res) {
-    validateUserId(req, res);
+    getUserIdErrors(req, res);
     res.status(204).send();
 };
 
@@ -52,25 +53,27 @@ UserController.prototype.create = function(req, res) {
  * We should only update a user.
  */
 UserController.prototype.updateLegacy = function(req, res) {
-    validateUserId(req, res);
-    validateUserDetails(req, res);
-    validateStripeToken(req, res);
+    var errors = getUpdateLegacyErrors(req);
 
-    // check if user exists
-    getUser(req.params.id).
-        then(function(user) {
-            return updateUser(user, req.body);
-        }).
-        then(function(user) {
-            //TODO Having this here isn't RESTful
-            return createPaymentCustomer(user, req.body.stripeToken);
-        }).
-        then(function() {
-            res.status(204).send();
-        }).
-        fail(function(err) {
-            res.status(400).send(err);
-        });
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        // check if user exists
+        getUser(req.params.id).
+            then(function(user) {
+                return updateUser(user, req.body);
+            }).
+            then(function(user) {
+                //TODO Having this here isn't RESTful
+                return createPaymentCustomer(user, req.body.stripeToken);
+            }).
+            then(function() {
+                res.status(204).send();
+            }).
+            fail(function(err) {
+                res.status(400).send(err);
+            });
+    }
 };
 
 /**
@@ -79,21 +82,63 @@ UserController.prototype.updateLegacy = function(req, res) {
  * @param res
  */
 UserController.prototype.createPayment = function(req, res) {
-    validateUserId(req, res);
-    validateStripeToken(req, res);
+    var errors = getCreatePaymentErrors(req);
 
-    // check if user exists
-    getUser(req.params.id).
-        then(function(user) {
-            return createPaymentCustomer(user, req.body.stripeToken);
-        }).
-        then(function() {
-            res.status(204).send();
-        }).
-        fail(function(err) {
-            res.status(400).send(err);
-        });
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        // check if user exists
+        getUser(req.params.id).
+            then(function(user) {
+                return createPaymentCustomer(user, req.body.stripeToken);
+            }).
+            then(function() {
+                res.status(204).send();
+            }).
+            fail(function(err) {
+                res.status(400).send(err);
+            });
+    }
 };
+
+/**
+ * Checks the required parameters for 'create payment' for errors.
+ *
+ * @param req
+ * @returns {boolean|Array}
+ */
+function getCreatePaymentErrors(req) {
+    var errors = _.filter(
+        _.flatten([
+            getUserIdErrors(req),
+            getStripeTokenErrors(req)
+        ]),
+        function(n) {
+            return !!n;
+        });
+
+    return errors.length > 0 ? errors : false;
+}
+
+/**
+ * Checks the required parameters for 'update (legacy)' for errors.
+ *
+ * @param req
+ * @returns {boolean|Array}
+ */
+function getUpdateLegacyErrors(req) {
+    var errors = _.filter(
+        _.flatten([
+            getUserIdErrors(req),
+            getUserDetailsErrors(req),
+            getStripeTokenErrors(req)
+        ]),
+        function(n) {
+            return !!n;
+        });
+
+    return errors.length > 0 ? errors : false;
+}
 
 /**
  *
@@ -101,11 +146,9 @@ UserController.prototype.createPayment = function(req, res) {
  * @param req
  * @param res
  */
-function validateUserId(req, res) {
+function getUserIdErrors(req) {
     if (!req.params.id) {
-        logger.error('Database User _id not present. ');
-        res.status(400).send('Database User _id not present.');
-        return;
+        return 'Database User _id not present.';
     }
 }
 
@@ -114,15 +157,11 @@ function validateUserId(req, res) {
  * @param req
  * @param res
  */
-function validateStripeToken(req, res) {
+function getStripeTokenErrors(req) {
     req.checkBody('stripeToken', 'A Stripe token is required').notEmpty();
 
     // check the validation object for errors
-    var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-        return;
-    }
+    return req.validationErrors();
 }
 
 /**
@@ -130,7 +169,7 @@ function validateStripeToken(req, res) {
  * @param req
  * @param res
  */
-function validateUserDetails(req, res) {
+function getUserDetailsErrors(req) {
     // verify we have good data in request
     // validate the input
     req.checkBody('plan', 'Plan ID is required').notEmpty();
@@ -145,11 +184,7 @@ function validateUserDetails(req, res) {
     req.checkBody('country', 'Country is required').notEmpty();
 
     // check the validation object for errors
-    var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-        return;
-    }
+    return req.validationErrors();
 }
 
 /**
@@ -167,7 +202,7 @@ function createPaymentCustomer(user, stripeToken) {
     return paymentManager.createCustomer(user, stripeToken)
         .then(function(stripeResponse) {
             logger.info('Customer successfully added to Stripe (' + stripeResponse.id + ', ' + user.billing.option +
-            ')');
+                ')');
 
             user.billing.stripeId = stripeResponse.id;
             user.signupComplete = true;
@@ -183,7 +218,7 @@ function createPaymentCustomer(user, stripeToken) {
             logger.error('Create Stripe customer: ' + err);
 
             //form into same structure as express-validator
-            return {
+            throw {
                 param: err.param,
                 msg: err.message,
                 value: ''
@@ -198,7 +233,7 @@ function createPaymentCustomer(user, stripeToken) {
  * @returns {*|Progress|promise|*|q.promise}
  */
 function updateUser(user, data) {
-    logger.info('Customer ' + user.id + ' found');
+    logger.info('Customer ' + user._id + ' found');
 
     user.firstName = data.fname;
     user.lastName = data.lname;
@@ -219,16 +254,25 @@ function updateUser(user, data) {
  * @returns {*|Progress|promise|*|q.promise}
  */
 function getUser(userId) {
-    logger.info('Start step 2: _id = ' + userId);
-
+    logger.info('Getting user with _id = ' + userId);
     return userManager.find({criteria: {_id: userId}}).
         then(function(user) {
-            logger.info('Customer ' + user.id + ' address and account details updated.');
-            return user;
+            if (!!user) {
+                logger.info('Customer ' + user._id + ' address and account details updated.');
+                return user;
+            } else {
+                throw 'Could not find user with _id = ' + userId;
+            }
         }).
         fail(function(err) {
-            logger.error('Saving account details: ' + err);
-            return err;
+            logger.error('Retrieving account details: ' + err);
+
+            //same structure as express-validator
+            throw {
+                param: 'id',
+                msg: err,
+                value: userId
+            };
         });
 }
 
