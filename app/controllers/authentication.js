@@ -7,6 +7,13 @@ var trackingManager = require('../tracking');
 var logger = common.utils.logger;
 var objectUtil = common.utils.object;
 
+var REDIRECT_URL_KEY = 'redirect_url';
+var AUTH_ACTION_KEY = 'action';
+var AUTH_ACTIONS = {
+    SIGNUP: 'signup',
+    REAUTH: 'reauth'
+};
+
 /**
  * Module dependencies.
  */
@@ -19,28 +26,59 @@ AuthenticationController.prototype.beginInstagram = function(req, res, next) {
     logger.info('Start Instagram Auth');
 
     // allows us to pass through any querystring params
-    req.session.params = objectUtil.param(req.query);
+
+    //get the redirect query if it is present in the querystring
+    req.session.auth = {
+        action: req.query[AUTH_ACTION_KEY],
+        redirectUrl: req.query[REDIRECT_URL_KEY]
+    };
+    delete req.query[AUTH_ACTION_KEY];
+    delete req.query[REDIRECT_URL_KEY];
+
+    //save the querystring to session so we can use it in the callback
+    req.session.auth.params = req.query;
+
     next();
 };
 
 AuthenticationController.prototype.callbackInstagram = function(req, res) {
-    logger.info('Instagram Auth complete for ' + req.user.instagram.username + ' (id: ' + req.user._id + ')');
+    var user = req.user;
+    var session = req.session;
+    var action = session.auth.action;
 
-    // remember user object for session.
-    req.session.userid = req.user._id;
+    logger.info('Instagram Auth complete for ' + user.instagram.username + ' (id: ' + user._id + ')');
+
+    //check for url redirect
+    var redirect = session.auth.redirectUrl;
 
     // append any querystring params that were passed
-    var params = req.session.params + '&id=' + req.session.userid;
-    delete req.session.params;
+    var params = objectUtil.param(req.session.auth.params) + '&id=' + user._id;
 
-    //if signup is already complete, redirect to the re-auth page.
-    //TODO make all these redirects a little more obvious.
-    if (!!req.user.signupComplete) {
-        res.redirect(common.config.instagram.redirect.reauth);
-    } else {
-        trackingManager.trackConnectedService(req.user, 'Instagram');
-        res.redirect(common.config.instagram.redirect.success + params);
+    //handle signup
+    if (!action || action === AUTH_ACTIONS.SIGNUP) {
+        if (user.signupComplete === true) {
+            logger.info('User attempted to signup but account already registered (' + user.instagram.username + ').');
+            redirect = common.config.instagram.redirect.fail;
+        } else {
+            trackingManager.trackConnectedService(user, 'Instagram');
+            if (!redirect) {
+                redirect = common.config.instagram.redirect.success;
+            }
+        }
+    } else if (action === AUTH_ACTIONS.REAUTH) {
+        if (user.signupComplete === true) {
+            trackingManager.trackConnectedService(user, 'Instagram');
+            if (!redirect) {
+                redirect = common.config.instagram.redirect.reauth;
+            }
+        } else {
+            if (!redirect) {
+                redirect = common.config.instagram.redirect.success;
+            }
+        }
     }
+
+    res.redirect(redirect + params);
 };
 
 /**

@@ -2,7 +2,6 @@
  * @author Josh Stuart <joshstuartx@gmail.com>
  */
 
-var _ = require('lodash');
 var common = require('evergram-common');
 var userManager = common.user.manager;
 var userMapper = common.mapper.instagramUser;
@@ -36,45 +35,29 @@ function init(config) {
         clientID: config.clientID,
         clientSecret: config.clientSecret,
         callbackURL: config.callbackURL
-    }, function(accessToken, refreshToken, profile, done) {
+    }, function(authToken, refreshToken, profile, done) {
         var options = {
             criteria: {'instagram.id': profile.id}
         };
 
         userManager.find(options).
             then(function(user) {
-                if (!user) {
-                    //add the access token to the profile
-                    profile.accessToken = accessToken;
-
-                    return userManager.create(userMapper.toModel(profile)).
-                        then(function(user) {
-                            return done(null, user);
-                        }).
-                        fail(function(err) {
-                            logger.error('Error creating user account for user (' + profile.username + ')');
-                            return done(err);
-                        });
-                } else if (user && user.signupComplete && _.isEmpty(user.instagram.authToken)) {
-                    logger.info('User is already registered (' + profile.username +
-                    '), but is missing an auth token. Redirected to ' + config.redirect.reauth);
-
-                    user.instagram.authToken = accessToken;
-                    userManager.update(user).
-                        finally(function() {
-                            done(null, user);
-                        });
-                } else if (user && user.signupComplete && !_.isEmpty(user.instagram.authToken)) {
-                    logger.info('User attempted to signup but account already registered (' + profile.username +
-                    '). Redirected to ' + config.redirect.fail);
-
-                    // redirect to 'Oops, looks like you've already got an Evergram account' page.
-                    done(null, false, {message: 'User account already registered.'});
-                } else {
-                    // user has started the signup process but never completed it.
-                    logger.info('User ' + profile.username + ' returned to complete an un-finished signup.');
-                    done(null, user);
+                if (!!user) {
+                    logger.info('User ' + profile.username +
+                        ' already exists. We will re-save the token and instagram profile.');
                 }
+
+                //add the access token to the profile
+                profile.authToken = authToken;
+
+                return userManager.create(userMapper.toModel(profile, user)).
+                    then(function(user) {
+                        return done(null, user);
+                    }).
+                    fail(function(err) {
+                        logger.error('Error creating user account for user (' + profile.username + ')');
+                        return done(err);
+                    });
             }).
             fail(function(err) {
                 logger.error('getInstagramAuthStrategy(): ' + err);
