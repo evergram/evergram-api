@@ -38,3 +38,12 @@ npm start
 ```
 http://localhost:8080/user/auth/instagram
 ```
+
+
+###Testing
+
+```
+npm test
+```
+
+This will execute `jshint` and `jscs` for code style checks and the call `mocha` to run tests in `./test`

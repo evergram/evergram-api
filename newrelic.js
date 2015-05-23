@@ -20,6 +20,19 @@ exports.config = {
          * issues with the agent, 'info' and higher will impose the least overhead on
          * production applications.
          */
-        level: 'info'
+        level: 'trace'
+    },
+    agent_enabled: !!process.env.NEW_RELIC_LICENSE_KEY,
+    error_collector: {
+        enabled: !!process.env.NEW_RELIC_LICENSE_KEY
+    },
+    transaction_tracer: {
+        enabled: !!process.env.NEW_RELIC_LICENSE_KEY
+    },
+    transaction_events: {
+        enabled: !!process.env.NEW_RELIC_LICENSE_KEY
+    },
+    error_collector: {
+        enabled: !!process.env.NEW_RELIC_LICENSE_KEY
     }
-}
+};

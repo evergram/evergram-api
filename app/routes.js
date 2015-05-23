@@ -5,11 +5,15 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
-var common = require('evergram-common');
+var cors = require('cors');
+var config = require('evergram-common').config;
 var controllers = require('./controllers');
-var trackingManager = require('./tracking');
-var logger = common.utils.logger;
-var objectUtil = common.utils.object;
+
+/**
+ * Enable CORS on all requests
+ */
+router.use(cors());
+router.options('*', cors());
 
 /**
  * General
@@ -21,59 +25,35 @@ router.get('/', function(req, res) {
 /**
  * Instagram auth
  */
-router.get('/user/auth/instagram', function(req, res, next) {
-    //TODO move to contorller
-    logger.info('Start Instagram Auth');
+router.get(
+    '/auth/instagram',
+    controllers.authentication.beginInstagram,
+    passport.authenticate('instagram', {
+        failureRedirect: config.instagram.redirect.fail
+    })
+);
 
-    // allows us to pass through any querystring params
-    req.session.params = objectUtil.param(req.query);
-    next();
-
-}, passport.authenticate('instagram', {
-    failureRedirect: common.config.instagram.redirect.fail
-}));
-
-router.get('/user/auth/instagram/callback', passport.authenticate('instagram', {
-    failureRedirect: common.config.instagram.redirect.fail
-}), function(req, res) {
-    //TODO move this to a controller.
-    logger.info('Instagram Auth complete for ' + req.user.instagram.username + ' (id: ' + req.user._id + ')');
-
-    // remember user object for session.
-    req.session.userid = req.user._id;
-
-    // append any querystring params that were passed
-    var params = req.session.params + '&id=' + req.session.userid;
-    delete req.session.params;
-
-    //if signup is already complete, redirect to the re-auth page.
-    //TODO make all these redirects a little more obvious.
-    if (!!req.user.signupComplete) {
-        res.redirect(common.config.instagram.redirect.reauth);
-    } else {
-        trackingManager.trackConnectedService(req.user, 'Instagram');
-        res.redirect(common.config.instagram.redirect.success + params);
-    }
-});
+router.get(
+    '/auth/instagram/callback',
+    passport.authenticate('instagram', {
+        failureRedirect: config.instagram.redirect.fail
+    }),
+    controllers.authentication.callbackInstagram
+);
 
 /**
- * Squarespace Signup/Registration
+ * Users
  */
-router.post('/user/:id', function(req, res) {
-    controllers.users.saveAccountDetails(req.params.id, req, res);
-});
-
-/**
- * Not needed yet but will be in future.
- */
-router.get('/user', function(req, res) {
-    controllers.users.getList(req, res);
-});
+router.get('/user', controllers.users.getList);
+router.get('/user/:id', controllers.users.get);
+router.post('/user', controllers.users.create);
+router.put('/user/:id', controllers.users.updateLegacy);
+router.post('/user/:id/payment', controllers.users.createPayment);
 
 /**
  * Error handling
  */
-router.use(function(req, res, next) {
+router.use(function(req, res) {
     res.status(404).send('Page Not Found');
 });
 

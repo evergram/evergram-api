@@ -14,6 +14,8 @@ var methodOverride = require('method-override');
 var MongoStore = require('connect-mongo')(session);
 
 var passport = require('passport');
+//init authentication services for passport
+require('./service/authentication');
 
 var app = express();
 
@@ -53,8 +55,5 @@ app.use(require('./routes.js'));
 
 //init db
 common.db.connect();
-
-//ensure instagram passport auth strategy is instantiated
-common.instagram.initAuthStrategy();
 
 module.exports = app;
