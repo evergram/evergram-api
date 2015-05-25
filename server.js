@@ -1,6 +1,9 @@
 /**
  * Module dependencies
  */
+
+process.env.TZ = 'UTC';
+
 require('newrelic');
 
 var port = process.env.PORT || 8080;
