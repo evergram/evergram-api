@@ -51,6 +51,14 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+/**
+ * Routes
+ */
+app.route('/')
+    .get(function(req, res) {
+        res.status(204).send();
+    });
+
 // routes
 app.use(config.api.version, require('./routes.js'));
 

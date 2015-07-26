@@ -21,7 +21,7 @@ SignedUpController.prototype.create = function(req, res) {
             if (!!user) {
                 trackingManager.trackSignedUp(user).
                     then(function() {
-                        res.send(204);
+                        res.send(201);
                     }).
                     fail(function(err) {
                         res.status(400).send(err.message);

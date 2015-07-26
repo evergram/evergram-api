@@ -16,13 +16,6 @@ router.use(cors());
 router.options('*', cors());
 
 /**
- * General
- */
-router.get('/', function(req, res) {
-    res.json({messsage: 'ping'});
-});
-
-/**
  * Instagram auth
  */
 router.get(
