@@ -9,7 +9,8 @@ describe('UserApi', function() {
     var app = require('../../app');
     var agent = request.agent(app);
 
-    it('should get all users /v1/users', function(done) {
+    //TODO once we have security and unclock the endpoint.
+    xit('should get all users /v1/users', function(done) {
         var newUser1 = new User({
             instagram: {
                 username: 'elonmusk1'

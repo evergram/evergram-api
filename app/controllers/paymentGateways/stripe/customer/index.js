@@ -20,14 +20,12 @@ CustomerController.prototype.create = function(req, res) {
         then(function(createdStripeUser) {
             logger.error('Created Stripe customer');
 
-            res.status(201).
-                json(createdStripeUser);
+            res.status(201).json(createdStripeUser);
         }).
         fail(function(err) {
             logger.error('Failed creating Stripe customer', err);
 
-            res.status(400).
-                json(err);
+            res.status(400).send(err);
         });
 };
 

@@ -44,7 +44,8 @@ router.get(
 /**
  * User
  */
-router.get('/users', controllers.users.getList);
+// TODO unblock the users endpoint when we have time to put security in.
+//router.get('/users', controllers.users.getList);
 router.get('/users/:id', controllers.users.get);
 router.post('/users', controllers.users.create);
 router.patch('/users/:id', controllers.users.update);
@@ -54,6 +55,11 @@ router.patch('/users/:id', controllers.users.update);
  */
 router.post('/payment-gateways/stripe/customer',
     controllers.paymentGateways.stripe.customer.create);
+
+/**
+ * Events / Tracking
+ */
+router.post('/events/signed-up', controllers.events.signedUp.create);
 
 /**
  * Error handling

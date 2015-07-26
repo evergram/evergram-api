@@ -4,6 +4,7 @@
 
 function Controllers() {
     this.authentication = require('./authentication');
+    this.events = require('./events');
     this.paymentGateways = require('./paymentGateways');
     this.users = require('./users');
 }

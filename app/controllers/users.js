@@ -27,8 +27,7 @@ UserController.prototype.getList = function(req, res) {
             res.json(users);
         }).
         fail(function(err) {
-            res.status(400).
-                json(err);
+            res.status(400).send(err.message);
         });
 };
 
@@ -44,12 +43,11 @@ UserController.prototype.get = function(req, res) {
             if (!!user) {
                 res.json(user);
             } else {
-                res.status(404).send();
+                res.status(404).send('User does not exist');
             }
         }).
         fail(function(err) {
-            res.status(400).
-                json(err);
+            res.status(400).send(err.message);
         });
 };
 
@@ -64,12 +62,10 @@ UserController.prototype.create = function(req, res) {
 
     userManager.create(user).
         then(function(createdUser) {
-            res.status(201).
-                json(createdUser.toObject());
+            res.status(201).json(createdUser.toObject());
         }).
         fail(function(err) {
-            res.status(400).
-                json(err);
+            res.status(400).send(err.message);
         });
 };
 
@@ -82,12 +78,10 @@ UserController.prototype.create = function(req, res) {
 UserController.prototype.update = function(req, res) {
     userManager.findAndUpdate(req.params.id, req.body).
         then(function(updatedUser) {
-            res.status(201).
-                json(updatedUser.toObject());
+            res.status(201).json(updatedUser.toObject());
         }).
         fail(function(err) {
-            res.status(400).
-                json(err);
+            res.status(400).send(err.message);
         });
 };
 
