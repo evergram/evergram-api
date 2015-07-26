@@ -12,8 +12,9 @@ var cookieSession = require('cookie-session');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var MongoStore = require('connect-mongo')(session);
-
+var config = require('./config');
 var passport = require('passport');
+
 //init authentication services for passport
 require('./service/authentication');
 
@@ -51,7 +52,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // routes
-app.use(require('./routes.js'));
+app.use(config.api.version, require('./routes.js'));
 
 //init db
 common.db.connect();

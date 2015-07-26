@@ -22,12 +22,21 @@ var AuthenticationController = function() {
     //constructor does nothing
 };
 
+/**
+ * Starts the instagram oauth.
+ *
+ * Checks the querystring for "action" and "redirect" and set it on the session to be used in
+ * {@link AuthenticationController#callbackInstagram}.
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
 AuthenticationController.prototype.beginInstagram = function(req, res, next) {
     logger.info('Start Instagram Auth');
 
     // allows us to pass through any querystring params
-
-    //get the redirect query if it is present in the querystring
+    // get the redirect query if it is present in the querystring
     req.session.auth = {
         action: req.query[AUTH_ACTION_KEY],
         redirectUrl: req.query[REDIRECT_URL_KEY]
@@ -41,6 +50,14 @@ AuthenticationController.prototype.beginInstagram = function(req, res, next) {
     next();
 };
 
+/**
+ * Handles the instagram callback.
+ *
+ * Checks the session for "action" and "redirect" which was set in {@link AuthenticationController#beginInstagram}.
+ *
+ * @param req
+ * @param res
+ */
 AuthenticationController.prototype.callbackInstagram = function(req, res) {
     var user = req.user;
     var session = req.session;
