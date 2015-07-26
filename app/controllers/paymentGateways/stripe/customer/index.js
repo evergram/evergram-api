@@ -18,7 +18,7 @@ var CustomerController = function() {
 CustomerController.prototype.create = function(req, res) {
     paymentManager.createCustomer(req.body).
         then(function(createdStripeUser) {
-            logger.error('Created Stripe customer');
+            logger.info('Created Stripe customer');
 
             res.status(201).json(createdStripeUser);
         }).
