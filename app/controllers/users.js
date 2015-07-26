@@ -92,53 +92,6 @@ UserController.prototype.update = function(req, res) {
 };
 
 /**
- *
- * @param userId
- * @param req
- * @param res
- */
-function getUserIdErrors(req) {
-    if (!req.params.id) {
-        return 'Database User _id not present.';
-    }
-}
-
-/**
- *
- * @param req
- * @param res
- */
-function getStripeTokenErrors(req) {
-    req.checkBody('stripeToken', 'A Stripe token is required').notEmpty();
-
-    // check the validation object for errors
-    return req.validationErrors();
-}
-
-/**
- *
- * @param req
- * @param res
- */
-function getUserDetailsErrors(req) {
-    // verify we have good data in request
-    // validate the input
-    req.checkBody('plan', 'Plan ID is required').notEmpty();
-    req.checkBody('fname', 'First name is required').notEmpty();
-    req.checkBody('lname', 'Last name is required').notEmpty();
-    req.checkBody('email', 'Email is required').notEmpty();
-    req.checkBody('email', 'Invalid email address').isEmail();
-    req.checkBody('address', 'Street address is required').notEmpty();
-    req.checkBody('city', 'City or suburb is required').notEmpty();
-    req.checkBody('state', 'State is required').notEmpty();
-    req.checkBody('postcode', 'Postcode is required').notEmpty();
-    req.checkBody('country', 'Country is required').notEmpty();
-
-    // check the validation object for errors
-    return req.validationErrors();
-}
-
-/**
  * Expose
  * @type {UserController}
  */
