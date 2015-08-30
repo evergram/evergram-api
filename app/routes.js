@@ -48,6 +48,8 @@ router.patch('/users/:id', controllers.users.update);
  */
 router.post('/payment-gateways/stripe/customer',
     controllers.paymentGateways.stripe.customer.create);
+router.put('/payment-gateways/stripe/customer/:id',
+    controllers.paymentGateways.stripe.customer.update);
 
 /**
  * Events / Tracking

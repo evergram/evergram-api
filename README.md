@@ -1,5 +1,7 @@
 #Evergram API
 
+[![Shippable](https://img.shields.io/shippable/557f6f2fedd7f2c052192752.svg)](https://app.shippable.com/projects/557f6f2fedd7f2c052192752)
+
 An API for Evergram
 
 ###Install Node.JS
