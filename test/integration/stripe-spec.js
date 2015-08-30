@@ -89,7 +89,7 @@ describe('Stripe Api', function() {
             return {id: id};
         }));
 
-        agent.put('/v1/payment-gateways/stripe/customer/' + id).
+        agent.patch('/v1/payment-gateways/stripe/customer/' + id).
             send(data).
             end(function(err, res) {
                 should.not.exist(err);
@@ -113,7 +113,7 @@ describe('Stripe Api', function() {
                 throw new Error();
             }));
 
-            agent.put('/v1/payment-gateways/stripe/customer/' + id).
+            agent.patch('/v1/payment-gateways/stripe/customer/' + id).
                 send(data).
                 end(function(err, res) {
                     should.not.exist(err);
