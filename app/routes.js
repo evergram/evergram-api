@@ -1,4 +1,4 @@
-/*!
+/**
  * Module dependencies.
  */
 
@@ -6,7 +6,7 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var cors = require('cors');
-var config = require('evergram-common').config;
+var config = require('./config');
 var controllers = require('./controllers');
 
 /**
@@ -14,13 +14,6 @@ var controllers = require('./controllers');
  */
 router.use(cors());
 router.options('*', cors());
-
-/**
- * General
- */
-router.get('/', function(req, res) {
-    res.send('ping');
-});
 
 /**
  * Instagram auth
@@ -42,13 +35,26 @@ router.get(
 );
 
 /**
- * Users
+ * User
  */
-router.get('/user', controllers.users.getList);
-router.get('/user/:id', controllers.users.get);
-router.post('/user', controllers.users.create);
-router.put('/user/:id', controllers.users.updateLegacy);
-router.post('/user/:id/payment', controllers.users.createPayment);
+// TODO unblock the users endpoint when we have time to put security in.
+//router.get('/users', controllers.users.getList);
+router.get('/users/:id', controllers.users.get);
+router.post('/users', controllers.users.create);
+router.patch('/users/:id', controllers.users.update);
+
+/**
+ * Payment Gateways
+ */
+router.post('/payment-gateways/stripe/customer',
+    controllers.paymentGateways.stripe.customer.create);
+router.patch('/payment-gateways/stripe/customer/:id',
+    controllers.paymentGateways.stripe.customer.update);
+
+/**
+ * Events / Tracking
+ */
+router.post('/events/signed-up', controllers.events.signedUp.create);
 
 /**
  * Error handling
