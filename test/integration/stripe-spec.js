@@ -74,7 +74,7 @@ describe('Stripe Api', function() {
                 });
         });
 
-    it('should update a stripe customer using /v1/payment-gateways/stripe/customer/:id', function(done) {
+    it('should update a stripe customer using PATCH /v1/payment-gateways/stripe/customer/:id', function(done) {
         //stub stripe api
         var id = 'stripeCustId';
         var data = {
@@ -90,6 +90,33 @@ describe('Stripe Api', function() {
         }));
 
         agent.patch('/v1/payment-gateways/stripe/customer/' + id).
+            send(data).
+            end(function(err, res) {
+                should.not.exist(err);
+
+                //assert the request was successful
+                res.status.should.be.equal(200);
+                res.body.id.should.be.equal(id);
+                done();
+            });
+    });
+
+    it('should update a stripe customer using PUT /v1/payment-gateways/stripe/customer/:id', function(done) {
+        //stub stripe api
+        var id = 'stripeCustId';
+        var data = {
+            email: 'josh.stuart@zoopcommerce.com',
+            plan: 'NEW-TEST-123',
+            metadata: {
+                instagram_id: 'awdawda'
+            }
+        };
+
+        paymentManagerUpdateStub.withArgs(id, data).returns(q.fcall(function() {
+            return {id: id};
+        }));
+
+        agent.put('/v1/payment-gateways/stripe/customer/' + id).
             send(data).
             end(function(err, res) {
                 should.not.exist(err);
