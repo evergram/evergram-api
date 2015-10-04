@@ -42,6 +42,7 @@ router.get(
 router.get('/users/:id', controllers.users.get);
 router.post('/users', controllers.users.create);
 router.patch('/users/:id', controllers.users.update);
+router.put('/users/:id', controllers.users.update);
 
 /**
  * Payment Gateways
@@ -49,6 +50,8 @@ router.patch('/users/:id', controllers.users.update);
 router.post('/payment-gateways/stripe/customer',
     controllers.paymentGateways.stripe.customer.create);
 router.patch('/payment-gateways/stripe/customer/:id',
+    controllers.paymentGateways.stripe.customer.update);
+router.put('/payment-gateways/stripe/customer/:id',
     controllers.paymentGateways.stripe.customer.update);
 
 /**

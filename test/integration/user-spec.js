@@ -126,7 +126,7 @@ describe('UserApi', function() {
             });
     });
 
-    it('should update a user using /v1/users/:id', function(done) {
+    it('should update a user using PATCH /v1/users/:id', function(done) {
         var newUser = new User({
             instagram: {
                 username: 'elonmusk'
@@ -136,6 +136,66 @@ describe('UserApi', function() {
         userManager.create(newUser).
             then(function(createdUser) {
                 agent.patch('/v1/users/' + createdUser._id).
+                    send({
+                        firstName: 'Elon',
+                        lastName: 'Musk',
+                        email: 'elon@teslamotors.com',
+                        billing: {
+                            option: 'PAYG'
+                        },
+                        address: {
+                            line1: '45500 Fremont Blvd',
+                            suburb: 'Fremont',
+                            state: 'CA',
+                            postcode: '94538',
+                            country: 'US'
+                        }
+                    }).
+                    end(function(err, res) {
+                        should.not.exist(err);
+
+                        //assert the request was successful
+                        res.status.should.be.equal(201);
+
+                        //verify that the user details were saved correctly in the db
+                        userManager.find({criteria: {_id: res.body._id}}).
+                            then(function(user) {
+                                //verify that the user details were saved correctly
+
+                                user.firstName.should.be.equal('Elon');
+                                user.lastName.should.be.equal('Musk');
+                                user.address.line1.should.be.equal('45500 Fremont Blvd');
+                                user.address.suburb.should.be.equal('Fremont');
+                                user.address.state.should.be.equal('CA');
+                                user.address.postcode.should.be.equal('94538');
+                                user.address.country.should.be.equal('US');
+                                user.billing.option.should.be.equal('PAYG');
+                                user.instagram.username.should.be.equal('elonmusk');
+                                user.signupComplete.should.be.equal(false);
+                                user.active.should.be.equal(true);
+
+                                done();
+                            }).
+                            fail(function(err) {
+                                done(err);
+                            });
+                    });
+            }).
+            fail(function(err) {
+                done(err);
+            });
+    });
+
+    it('should update a user using PUT /v1/users/:id', function(done) {
+        var newUser = new User({
+            instagram: {
+                username: 'elonmusk'
+            }
+        });
+
+        userManager.create(newUser).
+            then(function(createdUser) {
+                agent.put('/v1/users/' + createdUser._id).
                     send({
                         firstName: 'Elon',
                         lastName: 'Musk',
