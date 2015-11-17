@@ -95,6 +95,8 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
         }
     }
 
+    logger.info('Redirecting to ' + redirect + params);
+
     res.redirect(redirect + params);
 };
 
