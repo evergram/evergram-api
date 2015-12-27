@@ -59,6 +59,15 @@ router.put('/payment-gateways/stripe/customer/:id',
  */
 router.post('/events/signed-up', controllers.events.signedUp.create);
 
+
+/**
+ * images
+ */
+router.get('/imagesets/:userid/all', controllers.imageSets.getAll);
+router.get('/imagesets/:userid/current', controllers.imageSets.getCurrent);
+router.get('/imagesets/:userid/:id', controllers.imageSets.getById);
+
+
 /**
  * Error handling
  */
