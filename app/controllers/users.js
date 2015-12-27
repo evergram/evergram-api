@@ -25,7 +25,7 @@ var UserController = function() {
  */
 function serialize(user) {
     var serializedUser = user;
-    delete serializedUser.jobs;
+    delete serializedUser.jobs.print;
     delete serializedUser.payments;
 
     return serializedUser;
