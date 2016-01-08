@@ -11,6 +11,7 @@ var REDIRECT_URL_KEY = 'redirect_url';
 var AUTH_ACTION_KEY = 'action';
 var AUTH_ACTIONS = {
     SIGNUP: 'signup',
+    LOGIN: 'login',
     REAUTH: 'reauth'
 };
 
@@ -81,6 +82,18 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
             if (!redirect) {
                 redirect = common.config.instagram.redirect.success;
             }
+        }
+    } else if (action === AUTH_ACTIONS.LOGIN) {
+        if (user.signupComplete === true) {
+            trackingManager.trackLogin(user, 'Instagram');
+            if (!redirect) {
+                redirect = common.config.instagram.redirect.loginSuccess;
+            }
+        } else {
+            // Redirect back to login screen with err message as param
+            redirect = common.config.instagram.redirect.loginFail;
+            logger.info('User attempted to login but doesn\'t have a valid Pixy account.');
+            params += '&err=' + encodeURIComponent('User account not found');
         }
     } else if (action === AUTH_ACTIONS.REAUTH) {
         if (user.signupComplete === true) {

@@ -38,6 +38,14 @@ TrackingManager.prototype.trackSignedUp = function(user) {
         });
 };
 
+TrackingManager.prototype.trackLogin = function(user) {
+    var event = 'Logged in';
+
+    logger.info('Tracking "' + event + '" for ' + user.getUsername());
+
+    return trackingManager.trackEvent(user, event, {}, moment('now').toDate());     // RO TODO: Check that moment('now') is a thing. or do we just use new Date()?
+};
+
 /**
  * Expose
  * @type {TrackingManagerService}
