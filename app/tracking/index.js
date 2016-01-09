@@ -43,7 +43,7 @@ TrackingManager.prototype.trackLogin = function(user) {
 
     logger.info('Tracking "' + event + '" for ' + user.getUsername());
 
-    return trackingManager.trackEvent(user, event, {}, moment('now').toDate());     // RO TODO: Check that moment('now') is a thing. or do we just use new Date()?
+    return trackingManager.trackEvent(user, event, {}, moment().toDate());
 };
 
 /**

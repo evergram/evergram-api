@@ -7,9 +7,6 @@ var common = require('evergram-common');
 var logger = common.utils.logger;
 var printManager = common.print.manager;
 var userManager = common.user.manager;
-var User = common.models.User;
-var ImageSets = common.models.printableImageSet;
-var Image = common.models.Image;
 
 /**
  * Module dependencies.
@@ -44,7 +41,6 @@ function serialize(imageSet) {
 ImageSetController.prototype.getAll = function(req, res) {
 
     logger.info('Getting ImageSets for user ' + req.params.userid);
-    
     getUser(req.params.userid).
     then(function(user) {
 
@@ -74,9 +70,7 @@ ImageSetController.prototype.getAll = function(req, res) {
  */
 ImageSetController.prototype.getCurrent = function(req, res) {
 
-    
     logger.info('Getting current Image set for user ' + req.params.userid);
-    
     getUser(req.params.userid).
     then(function(user) {
 
@@ -110,12 +104,11 @@ ImageSetController.prototype.getById = function(req, res) {
     logger.info('Getting Image set ' + req.params.id + ' for user ' + req.params.userid);
 
     printManager.find({
-        criteria: { 
+        criteria: {
             _id : req.params.id
         }
     }).
     then(function(imageset) {
-        
         if (!!imageset) {
             logger.info('Found ImageSet ' + imageset.id);
             res.json(serialize(imageset));
@@ -125,7 +118,7 @@ ImageSetController.prototype.getById = function(req, res) {
         }
     }).
     fail(function(err) {
-        logger.error('Error getting image set with id ' + req.params.id, err)
+        logger.error('Error getting image set with id ' + req.params.id, err);
         res.status(400).send(err.message);
     });
 };
