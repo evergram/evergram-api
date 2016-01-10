@@ -38,6 +38,14 @@ TrackingManager.prototype.trackSignedUp = function(user) {
         });
 };
 
+TrackingManager.prototype.trackLogin = function(user) {
+    var event = 'Logged in';
+
+    logger.info('Tracking "' + event + '" for ' + user.getUsername());
+
+    return trackingManager.trackEvent(user, event, {}, moment().toDate());
+};
+
 /**
  * Expose
  * @type {TrackingManagerService}

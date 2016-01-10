@@ -65,7 +65,7 @@ UserController.prototype.get = function(req, res) {
     userManager.findById(req.params.id, {lean: true}).
     then(function(user) {
         if (!!user) {
-            logger.info('Found user ' + user.id);
+            logger.info('Found user ' + user._id);
             res.json(serialize(user));
         } else {
             logger.error('Error: user ' + req.params.id + ' not found');
