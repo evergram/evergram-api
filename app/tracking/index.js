@@ -34,7 +34,9 @@ TrackingManager.prototype.trackSignedUp = function(user) {
 
     return trackingManager.createUser(user).
         then(function() {
-            return trackingManager.trackEvent(user, event, {}, moment(user.signupCompletedOn).toDate());
+            return trackingManager.trackEvent(user, event, {
+                referringUser: user.referringUser.instagramUsername
+            }, moment(user.signupCompletedOn).toDate());
         });
 };
 

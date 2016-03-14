@@ -8,6 +8,7 @@ var logger = common.utils.logger;
 var objectUtil = common.utils.object;
 
 var REDIRECT_URL_KEY = 'redirect_url';
+var REFERRING_USER_KEY = 'referring_user';
 var AUTH_ACTION_KEY = 'action';
 var AUTH_ACTIONS = {
     SIGNUP: 'signup',
@@ -40,7 +41,8 @@ AuthenticationController.prototype.beginInstagram = function(req, res, next) {
     // get the redirect query if it is present in the querystring
     req.session.auth = {
         action: req.query[AUTH_ACTION_KEY],
-        redirectUrl: req.query[REDIRECT_URL_KEY]
+        redirectUrl: req.query[REDIRECT_URL_KEY],
+        referringUser: req.query[REFERRING_USER_KEY]
     };
     delete req.query[AUTH_ACTION_KEY];
     delete req.query[REDIRECT_URL_KEY];
