@@ -1,10 +1,10 @@
 /**
- * @author Josh Stuart <joshstuartx@gmail.com>
+ * @author Richard O'Brien <richard@printwithpixy.com>
  */
 
 var common = require('evergram-common');
 var userManager = common.user.manager;
-var userMapper = common.mapper.instagramUser;
+var userMapper = common.mapper.facebookUser;		// TODO: Need to create Facebook User Mapper in evergram-common
 var logger = common.utils.logger;
 var passport = require('passport');
 
@@ -22,6 +22,7 @@ passport.deserializeUser(function(id, done) {
         });
 });
 
+
 /**
  * Handles the passport callback
  *
@@ -29,22 +30,23 @@ passport.deserializeUser(function(id, done) {
  * @returns {*}
  */
 function init(config) {
-    var InstagramStrategy = require('passport-instagram').Strategy;
+    var FacebookStrategy = require('passport-facebook').Strategy;
 
-    return new InstagramStrategy({
+    return new FacebookStrategy({				// TODO: add Facebook object to config in evergram-common
         clientID: config.clientID,
         clientSecret: config.clientSecret,
-        callbackURL: config.callbackURL
+        callbackURL: config.callbackURL,
+        profileFields: ['id','displayName','name','emails','picture.type(large)','link']
     }, function(authToken, refreshToken, profile, done) {
         var options = {
-            criteria: {'instagram.id': profile.id}
+            criteria: {'facebook.id': profile.id}
         };
 
         userManager.find(options).
             then(function(user) {
                 if (!!user) {
-                    logger.info('User ' + profile.username + ' (id:' + user._id + ') ' +
-                        ' already exists. We will re-save the token and instagram profile.');
+                    logger.info('User ' + profile.displayName + ' (id:' + user._id + ')' +
+                        ' already exists. We will re-save the token and facebook profile.');
                 }
 
                 //add the access token to the profile
@@ -55,16 +57,16 @@ function init(config) {
                         return done(null, user);
                     }).
                     fail(function(err) {
-                        logger.error('Error creating user account for Instagram user ' + profile.username);
+                        logger.error('Error creating user account for Facebook user ' + profile.displayName);
                         return done(err);
                     });
             }).
             fail(function(err) {
-                logger.error('InstagramAuthStrategy: ' + err);
+                logger.error('FacebookAuthStrategy: ' + err);
                 done(err);
             });
     });
 }
 
 // use the instagram strategies
-passport.use(init(common.config.instagram));
+passport.use(init(common.config.facebook));

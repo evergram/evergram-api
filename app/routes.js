@@ -35,6 +35,28 @@ router.get(
 );
 
 /**
+ * Facebook auth
+ */
+router.get(
+    '/auth/facebook',
+    controllers.authentication.beginFacebook,
+    passport.authenticate('facebook', {
+        scope: ['email','user_friends','user_photos','user_posts'],
+        failureRedirect: config.facebook.redirect.fail
+    })
+);
+
+router.get(
+    '/auth/facebook/callback',
+    passport.authenticate('facebook', {
+        scope: ['email','user_friends','user_photos','user_posts'],
+        failureRedirect: config.facebook.redirect.fail
+    }),
+    controllers.authentication.callbackFacebook
+);
+
+
+/**
  * User
  */
 // TODO unblock the users endpoint when we have time to put security in.

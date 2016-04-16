@@ -21,9 +21,20 @@ TrackingManager.prototype.trackConnectedService = function(user, service) {
 
     logger.info('Tracking "' + event + '" for ' + user.getUsername());
 
+    var serviceId, serviceUsername;
+
+    if (service === 'Instagram') {
+        serviceId = user.instagram.id;
+        serviceUsername = user.instagram.username;
+    } else if (service === 'Facebook') {
+        serviceId = user.facebook.id;
+        serviceUsername = '';
+    }
+
     return trackingManager.trackEvent(user, event, {
         service: service,
-        instagramUsername: user.instagram.username
+        serviceId: serviceId,
+        serviceUsername: serviceUsername
     }, moment().toDate());
 };
 
