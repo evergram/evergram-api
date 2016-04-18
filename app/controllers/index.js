@@ -8,6 +8,7 @@ function Controllers() {
     this.paymentGateways = require('./payment-gateways');
     this.users = require('./users');
     this.imageSets = require('./image-sets');
+    this.facebook = require('./facebook');
 }
 
 module.exports = exports = new Controllers();
