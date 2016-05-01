@@ -32,15 +32,21 @@ passport.deserializeUser(function(id, done) {
 function init(config) {
     var FacebookStrategy = require('passport-facebook').Strategy;
 
-    return new FacebookStrategy({				// TODO: add Facebook object to config in evergram-common
+    return new FacebookStrategy({
         clientID: config.clientID,
         clientSecret: config.clientSecret,
         callbackURL: config.callbackURL,
-        profileFields: ['id','displayName','name','emails','picture.type(large)','link']
-    }, function(authToken, refreshToken, profile, done) {
-        var options = {
-            criteria: {'facebook.id': profile.id}
-        };
+        profileFields: ['id','displayName','name','emails','picture.type(large)','link'],
+        passReqToCallback: true
+    }, function(req, authToken, refreshToken, profile, done) {
+
+        var options;
+        
+        if (!!req.session.auth.id) {
+            options = { criteria: {'_id': req.session.auth.id} };
+        } else {
+            options = { criteria: {'facebook.id': profile.id} };
+        }
 
         userManager.find(options).
             then(function(user) {

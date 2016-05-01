@@ -13,7 +13,8 @@ var AUTH_ACTION_KEY = 'action';
 var AUTH_ACTIONS = {
     SIGNUP: 'signup',
     LOGIN: 'login',
-    REAUTH: 'reauth'
+    REAUTH: 'reauth',
+    CONNECT: 'connect'
 };
 
 /**
@@ -42,10 +43,14 @@ AuthenticationController.prototype.beginFacebook = function(req, res, next) {
     // get the redirect query if it is present in the querystring
     req.session.auth = {
         action: req.query[AUTH_ACTION_KEY],
-        redirectUrl: req.query[REDIRECT_URL_KEY]
+        redirectUrl: req.query[REDIRECT_URL_KEY],
+        referringUser: req.query[REFERRING_USER_KEY],
+        id: req.query['id']
     };
     delete req.query[AUTH_ACTION_KEY];
     delete req.query[REDIRECT_URL_KEY];
+    delete req.query[REFERRING_USER_KEY];
+    delete req.query['id'];
 
     //save the querystring to session so we can use it in the callback
     req.session.auth.params = req.query;
@@ -72,7 +77,7 @@ AuthenticationController.prototype.callbackFacebook = function(req, res) {
     var redirect = session.auth.redirectUrl;
 
     // append any querystring params that were passed
-    var params = objectUtil.param(req.session.auth.params) + '&id=' + user._id;
+    var params = objectUtil.param(req.session.auth.params);
 
     //handle signup
     if (!action || action === AUTH_ACTIONS.SIGNUP) {
@@ -97,18 +102,21 @@ AuthenticationController.prototype.callbackFacebook = function(req, res) {
             logger.info('User attempted to login but doesn\'t have a valid Pixy account.');
             params += '&err=' + encodeURIComponent('User account not found');
         }
-    } else if (action === AUTH_ACTIONS.REAUTH) {
+    } else if (action === AUTH_ACTIONS.CONNECT) {
         if (user.signupComplete === true) {
             trackingManager.trackConnectedService(user, 'Facebook');
             if (!redirect) {
-                redirect = common.config.facebook.redirect.reauth;
+                redirect = common.config.facebook.redirect.connectSuccess;
             }
+            params += '&showMessage=connectSuccess';
         } else {
-            if (!redirect) {
-                redirect = common.config.facebook.redirect.success;
-            }
+            // Redirect back to my-account screen and display fail message
+            redirect = common.config.facebook.redirect.connectFail;
+            params += '&showMessage=connectFail';
         }
     }
+    
+    params += '&id=' + user._id;
 
     logger.info('Redirecting to ' + redirect + params);
 
@@ -135,10 +143,13 @@ AuthenticationController.prototype.beginInstagram = function(req, res, next) {
     req.session.auth = {
         action: req.query[AUTH_ACTION_KEY],
         redirectUrl: req.query[REDIRECT_URL_KEY],
-        referringUser: req.query[REFERRING_USER_KEY]
+        referringUser: req.query[REFERRING_USER_KEY],
+        id: req.query['id']
     };
     delete req.query[AUTH_ACTION_KEY];
     delete req.query[REDIRECT_URL_KEY];
+    delete req.query[REFERRING_USER_KEY];
+    delete req.query['id'];
 
     //save the querystring to session so we can use it in the callback
     req.session.auth.params = req.query;
@@ -165,7 +176,7 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
     var redirect = session.auth.redirectUrl;
 
     // append any querystring params that were passed
-    var params = objectUtil.param(req.session.auth.params) + '&id=' + user._id;
+    var params = objectUtil.param(req.session.auth.params);
 
     //handle signup
     if (!action || action === AUTH_ACTIONS.SIGNUP) {
@@ -190,18 +201,21 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
             logger.info('User attempted to login but doesn\'t have a valid Pixy account.');
             params += '&err=' + encodeURIComponent('User account not found');
         }
-    } else if (action === AUTH_ACTIONS.REAUTH) {
+    } else if (action === AUTH_ACTIONS.CONNECT) {
         if (user.signupComplete === true) {
             trackingManager.trackConnectedService(user, 'Instagram');
             if (!redirect) {
-                redirect = common.config.instagram.redirect.reauth;
+                redirect = common.config.instagram.redirect.connectSuccess;
             }
+            params += '&showMessage=connectSuccess';
         } else {
-            if (!redirect) {
-                redirect = common.config.instagram.redirect.success;
-            }
+            // Redirect back to my-account screen and display fail message
+            redirect = common.config.instagram.redirect.connectFail;
+            params += '&showMessage=connectFail';
         }
     }
+
+    params += '&id=' + user._id;
 
     logger.info('Redirecting to ' + redirect + params);
 

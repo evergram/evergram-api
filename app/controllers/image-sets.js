@@ -84,7 +84,7 @@ ImageSetController.prototype.getCurrent = function(req, res) {
             res.json(serialize(imageset));
         } else {
             logger.error('Error: Latest ImageSet for user ' + req.params.userid + ' not found');
-            res.status(404).send('ImageSet does not exist');
+            res.status(400).send('ImageSet does not exist');
         }
     }).
     fail(function(err) {

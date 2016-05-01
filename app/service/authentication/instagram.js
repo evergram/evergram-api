@@ -34,11 +34,16 @@ function init(config) {
     return new InstagramStrategy({
         clientID: config.clientID,
         clientSecret: config.clientSecret,
-        callbackURL: config.callbackURL
-    }, function(authToken, refreshToken, profile, done) {
-        var options = {
-            criteria: {'instagram.id': profile.id}
-        };
+        callbackURL: config.callbackURL,
+        passReqToCallback: true
+    }, function(req, authToken, refreshToken, profile, done) {
+        var options;
+
+        if (!!req.session.auth.id) {
+            options = { criteria: {'_id': req.session.auth.id} };
+        } else {
+            options = { criteria: {'instagram.id': profile.id} };
+        }
 
         userManager.find(options).
             then(function(user) {
