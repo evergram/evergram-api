@@ -88,7 +88,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'http://www.printwithpixy.com/connect-messenger?mid={{messengerId}}',
+						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}',
 						    		title: 'Connect your account'
 						    	}]
 							}

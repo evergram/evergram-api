@@ -40,16 +40,11 @@ function saveImages(user,images) {
     var dateRun = new Date();
 
     logger.info("saving...");
+    
     /**
-     * process any previous image sets that haven't been closed out
+     * process the current images
      */
-    return processReadyForPrintImageSet(user).
-        then(function() {
-            /**
-             * process the current images
-             */
-            return processCurrentImageSet(user,images);
-        });
+    return processCurrentImageSet(user,images);
 }
 
 ImagesetManager.prototype.saveImages = saveImages;
@@ -72,44 +67,6 @@ function processCurrentImageSet(user,images) {
 
 ImagesetManager.prototype.processCurrentImageSet = processCurrentImageSet;
 
-/**
- * These are image sets that are past their period, but have not
- * yet been marked as "ready for print"
- *
- */
-function processReadyForPrintImageSet(user) {
-    var numberOfPeriods = user.getCurrentPeriod();
-    logger.info('FB Messenger: ' + user.getUsername() + ' is in period ' + numberOfPeriods);
-
-    if (numberOfPeriods > 0) {
-        logger.info('FB Messenger: Checking previous ready for print images for ' + user.getUsername());
-
-        return printManager.findPreviousByUser(user).
-            then(function(imageSet) {
-                if (!!imageSet && !imageSet.isReadyForPrint) {
-                    return processPrintableImageSet(user, imageSet).
-                        then(function() {
-                            //save the image set
-                            //TODO move this to processPrintableImageSet so that we only save once.
-                            imageSet.isReadyForPrint = true;
-                            return printManager.save(imageSet);
-                        });
-                } else {
-                    logger.info('FB Messenger: There are no previous incomplete image sets for ' + user.getUsername());
-                    return q.fcall(function() {
-                        return true;
-                    });
-                }
-            });
-    } else {
-        //TODO figure out a way to remove this as it's messy
-        return q.fcall(function() {
-            return true;
-        });
-    }
-}
-
-ImagesetManager.prototype.processReadyForPrintImageSet = processReadyForPrintImageSet;
 
 /**
  * Finds and saves images for the passed user and image set.
@@ -169,7 +126,7 @@ function saveImagesToS3(user, images, printableImageSet, service) {
     var deferred = q.defer();
     var imagesDeferred = [];
     var tmpdir = getUserDirectory(user);
-    var dir = getUserDirectory(user) + '/' + getImageSetDirectory(printableImageSet) + '/facebook';
+    var dir = getUserDirectory(user) + '/' + getImageSetDirectory(printableImageSet) + '/{printSize}';
 
     logger.info('Saving images for ' + user.getUsername() + ' to S3 Bucket');
 
@@ -182,7 +139,7 @@ function saveImagesToS3(user, images, printableImageSet, service) {
 
             imageManager.saveFromUrl(image.src.raw, imgFileName, tmpdir).
                 then(function(savedFilepath) {
-                    var filename = config.s3.folder + '/' + dir + '/' + path.basename(savedFilepath);
+                    var filename = config.s3.folder + '/' + dir.replace('{printSize}',image.meta.printSize) + '/' + path.basename(savedFilepath);
                     
                     s3.create(savedFilepath, {
                             bucket: s3Bucket,

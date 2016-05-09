@@ -20,7 +20,7 @@ function TrackingManager() {
 }
 
 /**
- * Tracks tagged images.
+ * Tracks tagged facebook images.
  *
  * @param user
  * @param imageSet
@@ -43,9 +43,9 @@ TrackingManager.prototype.trackTaggedImages = function(user, imageSet, images) {
                 plan: user.billing.option,
                 type: 'own',
                 image: image.src.raw,
-                tag: 'Facebook Messenger upload',
+                tag: 'Facebook Post',
                 period: user.getPeriodFromStartDate(imageSet.startDate),
-                createdOn: moment(image.createdOn).toDate(),
+                createdOn: moment(image.taggedOn).toDate(),
                 taggedOn: moment(image.taggedOn).toDate(),
                 count: (numberOfImages + numberOfNewImages)
             }, image.taggedOn);

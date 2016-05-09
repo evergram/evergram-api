@@ -58,8 +58,8 @@ router.get(
 /**
  * facebook webhooks
  */
-//router.get('/facebook/webhook', controllers.facebook.verify);
-//router.post('/facebook/webhook', controllers.facebook.postReceived);
+router.get('/facebook/webhook', controllers.facebook.verify);
+router.post('/facebook/webhook', controllers.facebook.postReceived);
 router.get('/facebook/messenger/webhook', controllers.facebook.verify);
 router.post('/facebook/messenger/webhook', controllers.facebook.messageReceived);
 

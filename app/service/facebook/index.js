@@ -9,7 +9,7 @@
  */
 function FacebookService() {
     this.messenger = require('./messenger')
-    //this.posts = require('./posts')
+    this.posts = require('./posts')
     this.imagesets = require('./imagesets')
 }
 

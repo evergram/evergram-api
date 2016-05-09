@@ -63,6 +63,38 @@ FacebookController.prototype.messageReceived = function(req, res) {
 	res.status(200).send('OK');
 };
 
+/**
+ * Post received from Facebook.
+ *
+ * @param req
+ * @param res
+ */
+FacebookController.prototype.postReceived = function(req, res) {
+    logger.info('FB Posts: Post received (type:' + req.body.object + ', uid:' + req.body.entry[0].uid + ', id:' + req.body.entry[0].id + ') ' + JSON.stringify(req.body));
+    
+    // TODO: verify the sha1= token from header?
+
+    var post_entries = req.body.entry;
+
+    // for each message in the request
+    _.forEach(post_entries, function(postEntry) {
+	    if(!!postEntry) {
+	    	// only process messages, ignore other types (e.g. delivery receipts)
+		    facebookService.posts.process(postEntry).
+		    then(function(response) {
+		        logger.info('FB Posts: Post processed for userid ' + postEntry.uid);
+		    }).
+		    fail(function(err) {
+		        logger.error('FB Posts: Error processing post for userid ' + postEntry.uid, err);
+		    });
+		} else {
+			// what to do?
+		}
+	})
+	res.status(200).send('OK');
+};
+
+
 
 /**
  * Expose
