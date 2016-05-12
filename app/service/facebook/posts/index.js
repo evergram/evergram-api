@@ -35,15 +35,20 @@ function process(entry) {
     var userid = entry.uid;
     var photoid = entry.id;
 
+    // #### TODO: COULD BE AN ARRAY SO NEED TO HANDLE THAT
+
     // Check this is a Pixy user
-    userManager.find({ criteria: { 'facebook.id': ''+userid+'' }}).
-    then(function(user) {
+    userManager.find({ criteria: { 'facebook.id': ''+userid+'' }})
+    .then( function(user) {
         if(!user) {
             logger.info("FB Post: User not found");
             // Not a pixy user, so do nothing.
             // TODO (stretch): respond with a comment prompting to signup?
             return deferred.resolve();
         }
+
+        // ##### TODO: FFFUUUUUUUCCCCCKKKK!!!! NEED TO GET ALL PHOTOS, COMPARE TO WHAT WE HAVE IN DB, THEN GRAB THE NEW ONES FROM FB.
+
 
         // Is a pixy user so... Get photo with that ID from fb
         getPhoto(user,photoid).
@@ -81,8 +86,11 @@ function getPhoto(user, fbPhotoId) {
 
     var deferred = q.defer();
 
+    logger.info('getting photo (' + fbPhotoId + ')');
+    logger.info('https://graph.facebook.com' + config.facebook.api + '/' + fbPhotoId + '?fields=id,from,name,picture,comments.order(reverse_chronological)');
+
     request({
-        url: 'https://graph.facebook.com' + config.facebook.api + fbPhotoId + '?fields=id,name,picture,comments.order(reverse_chronological)',
+        url: 'https://graph.facebook.com' + config.facebook.api + '/' + fbPhotoId + '?fields=id,from,name,picture,comments.order(reverse_chronological)',
         qs: {
             access_token:user.facebook.authToken, 
             appsecret_proof: generateSecret(user.facebook.authToken)

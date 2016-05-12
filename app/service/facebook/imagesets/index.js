@@ -8,6 +8,7 @@ var _ = require('lodash');
 var moment = require('moment');
 var q = require('q');
 var path = require('path');
+var graphicsMagick = require('gm');
 var common = require('evergram-common');
 var config = require('../../../config');
 var trackingManager = require('../tracking');
@@ -126,7 +127,7 @@ function saveImagesToS3(user, images, printableImageSet, service) {
     var deferred = q.defer();
     var imagesDeferred = [];
     var tmpdir = getUserDirectory(user);
-    var dir = getUserDirectory(user) + '/' + getImageSetDirectory(printableImageSet) + '/{printSize}';
+    var dir = getUserDirectory(user) + '/' + getImageSetDirectory(printableImageSet) + '/' + service;
 
     logger.info('Saving images for ' + user.getUsername() + ' to S3 Bucket');
 
@@ -139,7 +140,9 @@ function saveImagesToS3(user, images, printableImageSet, service) {
 
             imageManager.saveFromUrl(image.src.raw, imgFileName, tmpdir).
                 then(function(savedFilepath) {
-                    var filename = config.s3.folder + '/' + dir.replace('{printSize}',image.meta.printSize) + '/' + path.basename(savedFilepath);
+                    var filename = config.s3.folder + '/' + dir + '/' + path.basename(savedFilepath);
+                    
+                    image.metadata.printSize = getImageSize(savedFilepath); // determine appropriate print size.
                     
                     s3.create(savedFilepath, {
                             bucket: s3Bucket,
@@ -195,6 +198,21 @@ function getImageSetDirectory(imageSet) {
     return imageSet.period + '-' + moment(imageSet.startDate).format('YYYY-MM-DD') +
         '-to-' +
         moment(imageSet.endDate).format('YYYY-MM-DD');
+}
+
+
+
+function getImageSize(filename) {
+
+    graphicsMagick(filename)
+        .size(function (err, size) {
+            if (err) {
+                logger.err('Error detecting image size for ' + filename + '. Defaulted to ' + common.config.print.sizes.SQUARE);
+                return common.config.print.sizes.SQUARE;
+            }
+            // otherwise, return appropriate size based on config.
+            return size.width === size.height ? common.config.print.sizes.SQUARE : common.config.print.sizes.STANDARD;
+        });
 }
 
 /**

@@ -22,6 +22,7 @@ var FacebookController = function() {
  * @returns hub.challenge sent by facebook
  */
 FacebookController.prototype.verify = function(req, res) {
+	logger.log("Facebook Verify: " + JSON.stringify(req));
 	if (req.query['hub.verify_token'] === common.config.facebook.verifyToken) {
 		res.send(req.query['hub.challenge']);
 	} else {
@@ -73,7 +74,7 @@ FacebookController.prototype.postReceived = function(req, res) {
     logger.info('FB Posts: Post received (type:' + req.body.object + ', uid:' + req.body.entry[0].uid + ', id:' + req.body.entry[0].id + ') ' + JSON.stringify(req.body));
     
     // TODO: verify the sha1= token from header?
-
+/*
     var post_entries = req.body.entry;
 
     // for each message in the request
@@ -90,7 +91,7 @@ FacebookController.prototype.postReceived = function(req, res) {
 		} else {
 			// what to do?
 		}
-	})
+	})*/
 	res.status(200).send('OK');
 };
 
