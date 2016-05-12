@@ -22,7 +22,7 @@ var FacebookController = function() {
  * @returns hub.challenge sent by facebook
  */
 FacebookController.prototype.verify = function(req, res) {
-	logger.log("Facebook Verify: " + JSON.stringify(req));
+	logger.info("Facebook Verify: " + JSON.stringify(req.query));
 	if (req.query['hub.verify_token'] === common.config.facebook.verifyToken) {
 		res.send(req.query['hub.challenge']);
 	} else {
