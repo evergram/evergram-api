@@ -10,6 +10,7 @@ var objectUtil = common.utils.object;
 var REDIRECT_URL_KEY = 'redirect_url';
 var REFERRING_USER_KEY = 'referring_user';
 var AUTH_ACTION_KEY = 'action';
+var ID_KEY = 'id';
 var AUTH_ACTIONS = {
     SIGNUP: 'signup',
     LOGIN: 'login',
@@ -42,7 +43,8 @@ AuthenticationController.prototype.beginInstagram = function(req, res, next) {
     req.session.auth = {
         action: req.query[AUTH_ACTION_KEY],
         redirectUrl: req.query[REDIRECT_URL_KEY],
-        referringUser: req.query[REFERRING_USER_KEY]
+        referringUser: req.query[REFERRING_USER_KEY],
+        id: req.query[ID_KEY]
     };
     delete req.query[AUTH_ACTION_KEY];
     delete req.query[REDIRECT_URL_KEY];
@@ -72,7 +74,8 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
     var redirect = session.auth.redirectUrl;
 
     // append any querystring params that were passed
-    var params = objectUtil.param(req.session.auth.params) + '&id=' + user._id;
+    var params = objectUtil.param(req.session.auth.params);
+    logger.info('User action: ' + action);
 
     //handle signup
     if (!action || action === AUTH_ACTIONS.SIGNUP) {
@@ -85,6 +88,7 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
                 redirect = common.config.instagram.redirect.success;
             }
         }
+        params += '&id=' + user._id;
     } else if (action === AUTH_ACTIONS.LOGIN) {
         if (user.signupComplete === true) {
             trackingManager.trackLogin(user, 'Instagram');
@@ -97,6 +101,7 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
             logger.info('User attempted to login but doesn\'t have a valid Pixy account.');
             params += '&err=' + encodeURIComponent('User account not found');
         }
+        params += '&id=' + user._id;
     } else if (action === AUTH_ACTIONS.REAUTH) {
         if (user.signupComplete === true) {
             trackingManager.trackConnectedService(user, 'Instagram');
