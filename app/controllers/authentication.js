@@ -75,7 +75,7 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
 
     // append any querystring params that were passed
     var params = objectUtil.param(req.session.auth.params);
-    logger.info("action=" + action);
+    logger.info('User action: ' + action);
 
     //handle signup
     if (!action || action === AUTH_ACTIONS.SIGNUP) {
