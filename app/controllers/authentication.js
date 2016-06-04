@@ -214,6 +214,18 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
                 redirect = common.config.instagram.redirect.success;
             }
         }
+    } else if (action === AUTH_ACTIONS.CONNECT) {
+        if (user.signupComplete === true) {
+            trackingManager.trackConnectedService(user, 'Instagram');
+            if (!redirect) {
+                redirect = common.config.instagram.redirect.connectSuccess;
+            }
+            params += '&showMessage=connectSuccess';
+        } else {
+            // Redirect back to my-account screen and display fail message
+            redirect = common.config.instagram.redirect.connectFail;
+            params += '&showMessage=connectFail';
+        }
     }
 
     params += '&id=' + user._id;
