@@ -10,6 +10,7 @@ var objectUtil = common.utils.object;
 var REDIRECT_URL_KEY = 'redirect_url';
 var REFERRING_USER_KEY = 'referring_user';
 var AUTH_ACTION_KEY = 'action';
+var ID_KEY = 'id';
 var AUTH_ACTIONS = {
     SIGNUP: 'signup',
     LOGIN: 'login',
@@ -144,7 +145,7 @@ AuthenticationController.prototype.beginInstagram = function(req, res, next) {
         action: req.query[AUTH_ACTION_KEY],
         redirectUrl: req.query[REDIRECT_URL_KEY],
         referringUser: req.query[REFERRING_USER_KEY],
-        id: req.query['id']
+        id: req.query[ID_KEY]
     };
     delete req.query[AUTH_ACTION_KEY];
     delete req.query[REDIRECT_URL_KEY];
@@ -177,6 +178,7 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
 
     // append any querystring params that were passed
     var params = objectUtil.param(req.session.auth.params);
+    logger.info('User action: ' + action);
 
     //handle signup
     if (!action || action === AUTH_ACTIONS.SIGNUP) {
@@ -201,17 +203,16 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
             logger.info('User attempted to login but doesn\'t have a valid Pixy account.');
             params += '&err=' + encodeURIComponent('User account not found');
         }
-    } else if (action === AUTH_ACTIONS.CONNECT) {
+    } else if (action === AUTH_ACTIONS.REAUTH) {
         if (user.signupComplete === true) {
             trackingManager.trackConnectedService(user, 'Instagram');
             if (!redirect) {
-                redirect = common.config.instagram.redirect.connectSuccess;
+                redirect = common.config.instagram.redirect.reauth;
             }
-            params += '&showMessage=connectSuccess';
         } else {
-            // Redirect back to my-account screen and display fail message
-            redirect = common.config.instagram.redirect.connectFail;
-            params += '&showMessage=connectFail';
+            if (!redirect) {
+                redirect = common.config.instagram.redirect.success;
+            }
         }
     }
 
