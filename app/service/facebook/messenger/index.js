@@ -50,8 +50,16 @@ function process(envelope) {
          * STRETCH GOAL: Implement Wit.ai
          */
 
-        if(!!envelope.message.attachments) { // photo
+        if(!!envelope.message.attachments) { // photo or sticker
             logger.info("FB Messenger: Type is image");
+
+            if (!!envelope.message.sticker_id) {
+                // user sent a fb sticker (e.g. thumbs up 369239263222822)
+                // may want to so something about this in future but not for now. Could process as a 'Yes' or something and sent via processTextMessage()?
+                logger.info("FB Messenger: Sticker ignored (sticker id: " + envelope.message.sticker_id + ")");
+                return deferred.resolve();
+            }
+
             processPhotoMessage(envelope, user).
             then(function(response) {
                 sendResponse(envelope.sender.id, response);
@@ -85,6 +93,13 @@ Messenger.prototype.process = process
 function sendResponse(recipient,data) {
 
     logger.info('FB Messenger: Sending ' + data.response_id + ' to user ' + recipient);
+
+    // inject messengerId if required
+    if (data.template === 'button') {
+        _.forEach(data.message.attachment.payload.buttons, function(button) {
+            button.url.replace('{{messengerId}}', recipient);
+        })
+    }
 
     // build request & send
     request({

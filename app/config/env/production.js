@@ -83,12 +83,12 @@ module.exports = {
 								buttons:[
 								{
 						    		type: 'web_url',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan?mid={{messengerId}}',
+						    		url: 'https://test.printwithpixy.com.s3-website-us-east-1.amazonaws.com/#/choose-a-plan?mid={{messengerId}}',
 						    		title: 'Signup'
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}',
+						    		url: 'https://test.printwithpixy.com.s3-website-us-east-1.amazonaws.com/#/login?mid={{messengerId}}',
 						    		title: 'Connect your account'
 						    	}]
 							}

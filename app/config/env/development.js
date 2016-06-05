@@ -79,7 +79,7 @@ module.exports = {
 							type:'template',
 							payload: {
 								template_type:'button',
-								text:"Oops, looks like you're not a Pixy customer. To use Pixy, please signup at our website. Already a customer? You need to connect your account to Facebook Messenge first using the link below.",
+								text:"Oops, looks like you're not a Pixy customer. To use Pixy, please signup at our website. Already a customer? You need to connect your account to Facebook Messenger first using the link below.",
 								buttons:[
 								{
 						    		type: 'web_url',
