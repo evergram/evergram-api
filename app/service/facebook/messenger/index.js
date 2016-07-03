@@ -102,7 +102,7 @@ function processPostback(envelope) {
 
     logger.info("FB Messenger: Type is Postback");
 
-    logger.info("FB Messenger: processPostback payload = " + envelope.message.payload);
+    logger.info("FB Messenger: processPostback payload = " + envelope.postback.payload);
 
     // Check this is a Pixy user (mid === facebook.messengerId)
     userManager.find({ criteria: { 'facebook.messengerId': ''+envelope.sender.id+'' }}).
@@ -113,10 +113,10 @@ function processPostback(envelope) {
          * - PHOTO_UPLOAD.START
          * - HELP.REQUEST
          */
-        if(!!envelope.message.payload) { // 
+        if(!!envelope.postback.payload) { // 
             var response;
 
-            if (envelope.message.payload === 'MENU') {
+            if (envelope.postback.payload === 'MENU') {
                 // check if logged-in
                 if(!user) {
                     logger.info("FB Messenger: User not found");
@@ -126,11 +126,11 @@ function processPostback(envelope) {
                     response = config.facebook.messengerResponses.MENU.LOGGED_IN;
                 }
 
-            } else if (envelope.message.payload === 'HELP') {
+            } else if (envelope.postback.payload === 'HELP') {
                 response = config.facebook.messengerResponses.HELP.DEFAULT;
-            } else if (envelope.message.payload === 'HELP.REQUEST') {
+            } else if (envelope.postback.payload === 'HELP.REQUEST') {
                 response = config.facebook.messengerResponses.HELP.REQUEST;
-            } else if (envelope.message.payload === 'PHOTO_UPLOAD.START') {
+            } else if (envelope.postback.payload === 'PHOTO_UPLOAD.START') {
                 response = config.facebook.messengerResponses.PHOTO_UPLOAD.DEFAULT;
             }
 

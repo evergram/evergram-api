@@ -57,11 +57,11 @@ FacebookController.prototype.messageReceived = function(req, res) {
 		    fail(function(err) {
 		        logger.error('FB Messenger: Error processing message for sender.id ' + messageEvent.sender.id, err);
 		    });
-		} else if (messagingEvent.optin) {
+		} else if (messageEvent.optin) {
           // Authentication event
-        } else if (messagingEvent.delivery) {
+        } else if (messageEvent.delivery) {
           // Delivery receipt so ignore it for now
-        } else if (messagingEvent.postback) {
+        } else if (messageEvent.postback) {
         	// postback so process user's selection
           	facebookService.messenger.processPostback(messageEvent).
 		    then(function(response) {
@@ -71,7 +71,7 @@ FacebookController.prototype.messageReceived = function(req, res) {
 		        logger.error('FB Messenger: Error processing postback for sender.id ' + messageEvent.sender.id, err);
 		    });
         } else {
-          console.log("Webhook received unknown postbackEvent: ", messagingEvent);
+          console.log("Webhook received unknown postbackEvent: ", messageEvent);
         }
 	})
 	res.status(200).send('OK');
