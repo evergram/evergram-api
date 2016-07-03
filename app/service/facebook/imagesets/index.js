@@ -136,17 +136,23 @@ function saveImagesToS3(user, images, printableImageSet, service) {
             var imgDeferred = q.defer();
             imagesDeferred.push(imgDeferred.promise);
 
-            var imgFileName = user.facebook.id + '_' + path.basename(image.src.raw);
+            var imgFileName = user.facebook.id + '_' + path.basename(image.src.raw).split('?')[0];
+            var localFilepath;
+            var s3Filepath;
 
             imageManager.saveFromUrl(image.src.raw, imgFileName, tmpdir).
-                then(function(savedFilepath) {
-                    var filename = config.s3.folder + '/' + dir + '/' + path.basename(savedFilepath);
+                then(function(filepath) {
+                    localFilepath = filepath;
+                    s3Filepath = config.s3.folder + '/' + dir + '/' + path.basename(localFilepath);
                     
-                    image.metadata.printSize = getImageSize(savedFilepath); // determine appropriate print size.
-                    
-                    s3.create(savedFilepath, {
+                    return getImageSize(localFilepath); // determine appropriate print size.
+                }).
+                then(function(printSize) {
+                    image.metadata.printSize = printSize;
+
+                    s3.create(localFilepath, {
                             bucket: s3Bucket,
-                            key: filename,
+                            key: s3Filepath,
                             acl: 'public-read'
                     }).
                     then(function(s3File) {
@@ -203,16 +209,22 @@ function getImageSetDirectory(imageSet) {
 
 
 function getImageSize(filename) {
+    var deferred = q.defer();
 
     graphicsMagick(filename)
         .size(function (err, size) {
             if (err) {
-                logger.err('Error detecting image size for ' + filename + '. Defaulted to ' + common.config.print.sizes.SQUARE);
-                return common.config.print.sizes.SQUARE;
+                logger.error('Error detecting image size for ' + filename + '. Defaulted to ' + common.config.print.sizes.SQUARE);
+                logger.error('Error is ' + err);
+                return deferred.resolve(common.config.print.sizes.SQUARE);
             }
+
             // otherwise, return appropriate size based on config.
-            return size.width === size.height ? common.config.print.sizes.SQUARE : common.config.print.sizes.STANDARD;
+            var printSize = (size.width === size.height) ? common.config.print.sizes.SQUARE : common.config.print.sizes.STANDARD;
+            deferred.resolve(printSize);
         });
+
+    return deferred.promise;
 }
 
 /**

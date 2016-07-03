@@ -57,9 +57,15 @@ FacebookController.prototype.messageReceived = function(req, res) {
 		    fail(function(err) {
 		        logger.error('FB Messenger: Error processing message for sender.id ' + messageEvent.sender.id, err);
 		    });
-		} else {
-			// must be a delivery reciept, so ignore it
-		}
+		} else if (messagingEvent.optin) {
+          // Authentication event
+        } else if (messagingEvent.delivery) {
+          // Delivery receipt so ignore it for now
+        } else if (messagingEvent.postback) {
+          receivedPostback(messagingEvent);
+        } else {
+          console.log("Webhook received unknown messagingEvent: ", messagingEvent);
+        }
 	})
 	res.status(200).send('OK');
 };

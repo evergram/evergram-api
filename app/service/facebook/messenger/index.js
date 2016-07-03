@@ -14,7 +14,7 @@ var trackingManager = require('../tracking');
 var userManager = common.user.manager;
 var logger = common.utils.logger;
 var imagesetManager = require('../imagesets');
-var facebookImageMapper = common.mapper.facebookImage;
+var facebookImageMapper = common.mapper.facebookMessengerImage;
 
 /**
  * A service that handles all Facebook Messenger requests
@@ -28,7 +28,7 @@ function Messenger() {
  * Starting point for all messages received via the api
  * @param Object envelope: facebook message (messaging object) sent to the api
  */
-function process(envelope) {
+function processMessage(envelope) {
     var deferred = q.defer();
 
     // Check this is a Pixy user (mid === facebook.messengerId)
@@ -66,10 +66,17 @@ function process(envelope) {
                 return deferred.resolve();
             });
         }
-        else if(!!envelope.message.text) {   // text
+        else if(!!envelope.message.text) {   // text - will really only process if user types MENU, HELP, or a question to send to help@printwithpixy.com
             logger.info("FB Messenger: Type is text");
             processTextMessage(envelope, user).
             then(function(response) {
+
+                // inject messengerId if required
+                if (response.template === 'button') {
+                    _.forEach(response.message.attachment.payload.buttons, function(button) {
+                        button.url.replace('{{messengerId}}', envelope.sender.id);
+                    })
+                }
                 sendResponse(envelope.sender.id, response);
                 return deferred.resolve();
             });
@@ -83,43 +90,71 @@ function process(envelope) {
     return deferred.promise;
 };
 
-Messenger.prototype.process = process
+Messenger.prototype.processMessage = processMessage
+
 
 /**
- * Responsible for passing the response to the user's messenger client.
- * @param String recipient: the orginal senderid 
- * @param Object data: structured response from config.facebook.messengerResponses collection.
+ * Starting point for all postbacks received via the api.
+ * @param Object envelope: facebook postback (messaging object) sent to the api
  */
-function sendResponse(recipient,data) {
+function processPostback(envelope) {
+    var deferred = q.defer();
 
-    logger.info('FB Messenger: Sending ' + data.response_id + ' to user ' + recipient);
+    logger.info("FB Messenger: Type is Postback");
 
-    // inject messengerId if required
-    if (data.template === 'button') {
-        _.forEach(data.message.attachment.payload.buttons, function(button) {
-            button.url.replace('{{messengerId}}', recipient);
-        })
-    }
+    logger.info("FB Messenger: processPostback payload = " + envelope.message.payload);
 
-    // build request & send
-    request({
-        url: 'https://graph.facebook.com/' + config.facebook.api + '/me/messages',
-        qs: {access_token:config.facebook.pageToken},
-        method: 'POST',
-        json: {
-          recipient: {id:recipient},
-          message: data.message,
+    // Check this is a Pixy user (mid === facebook.messengerId)
+    userManager.find({ criteria: { 'facebook.messengerId': ''+envelope.sender.id+'' }}).
+    then(function(user) {
+        /* Types are...
+         * - MENU
+         * - HELP
+         * - PHOTO_UPLOAD.START
+         * - HELP.REQUEST
+         */
+        if(!!envelope.message.payload) { // 
+            var response;
+
+            if (envelope.message.payload === 'MENU') {
+                // check if logged-in
+                if(!user) {
+                    logger.info("FB Messenger: User not found");
+                    // Not a pixy user, respond with logged out menu
+                    response = config.facebook.messengerResponses.MENU.DEFAULT;
+                } else {
+                    response = config.facebook.messengerResponses.MENU.LOGGED_IN;
+                }
+
+            } else if (envelope.message.payload === 'HELP') {
+                response = config.facebook.messengerResponses.HELP.DEFAULT;
+            } else if (envelope.message.payload === 'HELP.REQUEST') {
+                response = config.facebook.messengerResponses.HELP.REQUEST;
+            } else if (envelope.message.payload === 'PHOTO_UPLOAD.START') {
+                response = config.facebook.messengerResponses.PHOTO_UPLOAD.DEFAULT;
+            }
+
+            // inject any variables into URLs if required
+            if (response.template === 'button') {
+                _.forEach(response.message.attachment.payload.buttons, function(button) {
+                    button.url.replace('{{messengerId}}', envelope.sender.id);
+                    button.url.replace('{{userId}}', user._id);
+                })
+            }
+
+            sendResponse(envelope.sender.id, response);
+            return deferred.resolve();
         }
-      }, function(error, response, body) {
-        if (error) {
-          console.log('Error sending message: ', error);
-        } else if (response.body.error) {
-          console.log('Error: ', response.body.error);
-        }
+    }).fail(function(err) {
+        logger.err('FB Messenger: ' + err);
+        sendResponse(envelope.sender.id, config.facebook.messengerResponses.ERROR.DEFAULT);
+        return deferred.reject(err);
     });
-}
 
-Messenger.prototype.sendResponse = sendResponse
+    return deferred.promise;
+};
+
+Messenger.prototype.processPostback = processPostback
 
 
 /**
@@ -162,7 +197,22 @@ function processPhotoMessage(envelope,user) {
         // TODO: Check printableImageSet is what's returned here so we can get the photo count for response message.
         // TODO: Find a way to manage variable insertion into responses
         logger.info('FB Messenger: Images successfully saved for user ' + user.getUsername());
-        var response = config.facebook.messengerResponses.PHOTO_UPLOAD_COMPLETE[user.billing.option] || config.facebook.messengerResponses.PHOTO_UPLOAD_COMPLETE.DEFAULT;
+
+        //var response = config.facebook.messengerResponses.PHOTO_UPLOAD_COMPLETE[user.billing.option] || config.facebook.messengerResponses.PHOTO_UPLOAD_COMPLETE.DEFAULT;
+        var response = config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE;
+
+        // inject any variables into URLs if required
+        response.message.text = response.message.text.replace('{{photo-count}}',imageset.length);
+
+        if (response.template === 'button') {
+            _.forEach(response.message.attachment.payload.buttons, function(button) {
+                button.url.replace('{{messengerId}}', envelope.sender.id);
+                button.url.replace('{{userId}}', user._id);
+            })
+        }
+
+        logger.info('response: ' + JSON.stringify(response));
+
         deferred.resolve(response);
     }).fail(function(err) {
         logger.err('FB Messenger: ' + err);
@@ -188,6 +238,37 @@ function processTextMessage(envelope, user) {
 
     return deferred.promise;
 }
+
+
+/**
+ * Responsible for passing the response to the user's messenger client.
+ * @param String recipient: the orginal senderid 
+ * @param Object data: structured response from config.facebook.messengerResponses collection.
+ */
+function sendResponse(recipient,data) {
+
+    logger.info('FB Messenger: Sending ' + data.response_id + ' to user ' + recipient);
+
+    // build request & send
+    request({
+        url: 'https://graph.facebook.com/' + config.facebook.api + '/me/messages',
+        qs: {access_token:config.facebook.pageToken},
+        method: 'POST',
+        json: {
+          recipient: {id:recipient},
+          message: data.message,
+        }
+      }, function(error, response, body) {
+        if (error) {
+          console.log('Error sending message: ', error);
+        } else if (response.body.error) {
+          console.log('Error: ', response.body.error);
+        }
+    });
+}
+
+Messenger.prototype.sendResponse = sendResponse
+
 
 /**
  * Expose
