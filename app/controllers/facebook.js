@@ -50,7 +50,7 @@ FacebookController.prototype.messageReceived = function(req, res) {
     _.forEach(messaging_events, function(messageEvent) {
 	    if(!!messageEvent.message) {
 	    	// only process messages, ignore other types (e.g. delivery receipts)
-		    facebookService.messenger.process(messageEvent).
+		    facebookService.messenger.processMessage(messageEvent).
 		    then(function(response) {
 		        logger.info('FB Messenger: Message processed for sender.id ' + messageEvent.sender.id);
 		    }).
@@ -62,9 +62,16 @@ FacebookController.prototype.messageReceived = function(req, res) {
         } else if (messagingEvent.delivery) {
           // Delivery receipt so ignore it for now
         } else if (messagingEvent.postback) {
-          receivedPostback(messagingEvent);
+        	// postback so process user's selection
+          	facebookService.messenger.processPostback(messageEvent).
+		    then(function(response) {
+		        logger.info('FB Messenger: Postback processed for sender.id ' + messageEvent.sender.id);
+		    }).
+		    fail(function(err) {
+		        logger.error('FB Messenger: Error processing postback for sender.id ' + messageEvent.sender.id, err);
+		    });
         } else {
-          console.log("Webhook received unknown messagingEvent: ", messagingEvent);
+          console.log("Webhook received unknown postbackEvent: ", messagingEvent);
         }
 	})
 	res.status(200).send('OK');
