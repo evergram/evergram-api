@@ -118,6 +118,8 @@ function processPostback(envelope) {
         MERGE_FIELDS.firstName = user.firstName;
         MERGE_FIELDS.photoCount = "";
 
+        logger.info('### MERGE_FIELDS = ' + JSON.stringify(MERGE_FIELDS));
+
         /* Types are...
          * - MENU
          * - HELP
@@ -137,6 +139,8 @@ function processPostback(envelope) {
                     response = config.facebook.messengerResponses.MENU.LOGGED_IN;
                 }
 
+            } else if (envelope.postback.payload === 'GET_STARTED') {
+                response = config.facebook.messengerResponses.GET_STARTED.DEFAULT;
             } else if (envelope.postback.payload === 'HELP') {
                 response = config.facebook.messengerResponses.HELP.DEFAULT;
             } else if (envelope.postback.payload === 'HELP.REQUEST') {
@@ -150,6 +154,8 @@ function processPostback(envelope) {
             // inject any variables into text & URLs if required
             response = replaceMergeFields(response);
             
+            logger.info('### REPLACED response = ' + JSON.stringify(response));
+
             sendResponse(envelope.sender.id, response);
 
             return deferred.resolve();

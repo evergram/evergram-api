@@ -32,13 +32,9 @@ module.exports = {
 										"2. Send us your photos, right here in messenger.\n" +
 										"3. We print & send your photos at the end of the month.\n" +
 										"\n" +
-										"To get started, simply signup or Login with your Pixy account.\n" +
+										"To get started, choose an option below.\n" +
 										"\n" +
-										"Plus, here's a couple of tips:\n" +
-										"* Text us the word MENU at any time to see your options.\n" +
-										"* If you need help, just text HELP to us and a real person will be in-touch (I'm just a friendly robot). :)\n" +
-										"\n" +
-										"Enjoy!",
+										"Need help? Just text us MENU to see more options. :)",
 								buttons:[
 								{
 						    		type: 'web_url',
@@ -47,7 +43,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		title: 'Signup at printwithpixy.com',
+						    		title: 'Signup',
 						    		url: 'http://www.printwithpixy.com/choose-a-plan'
 						    	},
 						    	{
@@ -71,12 +67,9 @@ module.exports = {
 								template_type:'button',
 								text:"Hi there. To use Pixy, please signup or login to your Pixy account.\n" +
 										"\n" +
-										"A couple of tips:\n" +
-										"* To upload photos, simply send them to us in this chat and we'll add them to your next order.\n" +
-										"* Text us the word MENU at any time to see your options.\n" +
-										"* If you need help, just text HELP to us and a real person will be in-touch (I'm just a friendly robot). :)\n" +
-										"\n" +
-										"Enjoy!",
+										"* To upload photos, send them to us in this chat and we'll add them to your next order.\n" +
+										"* Text us the word MENU at any time to see options.\n" +
+										"* Need help, just text HELP and a real person will be in-touch (I'm just a friendly robot). :)\n",
 								buttons:[
 								{
 						    		type: 'web_url',
@@ -105,14 +98,11 @@ module.exports = {
 							type:'template',
 							payload: {
 								template_type:'button',
-								text:"Hi {{firstName}}, great work! Your Pixy account is now connected to Messenger.\n" +
+								text:"Great work {{firstName}}! Your Pixy account is now connected to Messenger.\n" +
 										"\n" +
-										"A couple of tips:\n" +
-										"* To upload photos, simply send them to us in this chat and we'll add them to your next order.\n" +
-										"* Text us the word MENU at any time to see your options.\n" +
-										"* If you need help, just text HELP to us and a real person will be in-touch (I'm just a friendly robot). :)\n" +
-										"\n" +
-										"Enjoy!",
+										"* To upload photos, send them to us in this chat and we'll add them to your next order.\n" +
+										"* Text us the word MENU at any time to see options.\n" +
+										"* Need help, just text HELP and a real person will be in-touch (I'm just a friendly robot). :)\n",
 								buttons:[
 								{
 						    		type: 'postback',
@@ -182,7 +172,7 @@ module.exports = {
 										"* To upload photos, simply send them to us at any time in this chat and we'll add them to your next order.\n" +
 										"* To see the menu text us the word MENU.\n" +
 										"\n" +
-										"Need something else? Ask a question below to talk to a Pixy Team member (I'm just a friendly robot). :)",
+										"Need something else? Tap 'Ask a question' below to talk to a Pixy Team member (I'm just a friendly robot). :)",
 								buttons:[
 								{
 						    		type: 'web_url',
