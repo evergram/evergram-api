@@ -114,7 +114,8 @@ function processPostback(envelope) {
     // Check this is a Pixy user (mid === facebook.messengerId)
     userManager.find({ criteria: { 'facebook.messengerId': ''+envelope.sender.id+'' }}).
     then(function(user) {
-
+        logger.info('### Returned from User search - ' + JSON.stringify(user));
+        
         // Set merge fields to merge into message and URLS in case required.
         MERGE_FIELDS.messengerId = envelope.sender.id;
         MERGE_FIELDS.userId = user._id;
