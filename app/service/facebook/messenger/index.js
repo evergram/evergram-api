@@ -84,6 +84,9 @@ function processMessage(envelope) {
                 sendResponse(envelope.sender.id, response);
                 return deferred.resolve();
             });
+        } else { 
+            logger.info("FB Messenger: Un-recognised message: " + JSON.stringify(envelope));
+            deferred.reject();
         }
     }).fail(function(err) {
         logger.err('FB Messenger: ' + err);
@@ -159,6 +162,9 @@ function processPostback(envelope) {
             sendResponse(envelope.sender.id, response);
 
             return deferred.resolve();
+        } else { 
+            logger.info("FB Messenger: Empty postback payload: " + JSON.stringify(envelope));
+            deferred.reject();
         }
     }).fail(function(err) {
         logger.err('FB Messenger: ' + err);
