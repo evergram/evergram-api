@@ -3,6 +3,7 @@
  */
 
 var _ = require('lodash');
+var q = require('q');
 var common = require('evergram-common');
 var logger = common.utils.logger;
 var userManager = common.user.manager;
@@ -38,6 +39,9 @@ FacebookController.prototype.verify = function(req, res) {
  * @param res
  */
 FacebookController.prototype.messageReceived = function(req, res) {
+	var deferred = q.defer();
+	var deferredEvents = []
+
     logger.info('FB Messenger: Message received (id:' + req.body.entry[0].id + ') ' + JSON.stringify(req.body));
     
     // TODO: verify the sha1= token from header?
@@ -48,33 +52,46 @@ FacebookController.prototype.messageReceived = function(req, res) {
 
     // for each message in the request
     _.forEach(messaging_events, function(messageEvent) {
+    	var eventDefer = q.defer();
+    	deferredEvents.push(eventDefer);
+
 	    if(!!messageEvent.message) {
 	    	// only process messages, ignore other types (e.g. delivery receipts)
 		    facebookService.messenger.processMessage(messageEvent).
 		    then(function(response) {
 		        logger.info('FB Messenger: Message processed for sender.id ' + messageEvent.sender.id);
+		        eventDefer.resolve();
 		    }).
 		    fail(function(err) {
 		        logger.error('FB Messenger: Error processing message for sender.id ' + messageEvent.sender.id, err);
+		        eventDefer.reject();
 		    });
 		} else if (messageEvent.optin) {
-          // Authentication event
+			// Authentication event
+			eventDefer.resolve();
         } else if (messageEvent.delivery) {
-          // Delivery receipt so ignore it for now
+        	// Delivery receipt so ignore it for now
+			eventDefer.resolve();
         } else if (messageEvent.postback) {
         	// postback so process user's selection
           	facebookService.messenger.processPostback(messageEvent).
 		    then(function(response) {
 		        logger.info('FB Messenger: Postback processed for sender.id ' + messageEvent.sender.id);
+				eventDefer.resolve();
 		    }).
 		    fail(function(err) {
 		        logger.error('FB Messenger: Error processing postback for sender.id ' + messageEvent.sender.id, err);
+		        eventDefer.reject();
 		    });
         } else {
-          console.log("Webhook received unknown postbackEvent: ", messageEvent);
+        	logger.info("Webhook received unknown postbackEvent: ", messageEvent);
+		    eventDefer.reject();
         }
 	})
-	res.status(200).send('OK');
+
+	q.all(deferredEvents).then(function(){
+		res.status(200).send('OK');
+	});
 };
 
 /**
