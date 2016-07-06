@@ -36,19 +36,12 @@ function processMessage(envelope) {
     // Check this is a Pixy user (mid === facebook.messengerId)
     userManager.find({ criteria: { 'facebook.messengerId': ''+envelope.sender.id+'' }}).
     then(function(user) {
-        if(!user) {
-            logger.info("FB Messenger: User not found");
-            // Not a pixy user, respond with a message prompting to signup or connet their account?
-            var response = config.facebook.messengerResponses.ERROR.USER_NOT_FOUND || config.facebook.messengerResponses.ERROR.DEFAULT;
-            sendResponse(envelope.sender.id, response);
-            return deferred.resolve();
-        }
-
+        
         // Set merge fields to merge into message and URLS in case required.
         MERGE_FIELDS.messengerId = envelope.sender.id;
-        MERGE_FIELDS.userId = user._id;
-        MERGE_FIELDS.firstName = user.firstName;
-        MERGE_FIELDS.photoCount = "";
+        MERGE_FIELDS.userId = !!user ? user._id : '';
+        MERGE_FIELDS.firstName = !!user ? user.firstName : '';
+        MERGE_FIELDS.photoCount = '';
 
         /* Is a pixy user, so process message... types are...
          * - photo: uploads photo to current imageset, tracks photo, & responds with new photo count
@@ -57,7 +50,6 @@ function processMessage(envelope) {
          * - photo count: returns current photo count & login link for admin
          * STRETCH GOAL: Implement Wit.ai
          */
-
         if(!!envelope.message.attachments) { // photo or sticker
             logger.info("FB Messenger: Type is image");
 
@@ -68,11 +60,19 @@ function processMessage(envelope) {
                 return deferred.resolve();
             }
 
-            processPhotoMessage(envelope, user).
-            then(function(response) {
+            if(!user) {
+                logger.info("FB Messenger: User not found");
+                // Not a pixy user, respond with a message prompting to signup or connet their account?
+                var response = config.facebook.messengerResponses.ERROR.USER_NOT_FOUND || config.facebook.messengerResponses.ERROR.DEFAULT;
                 sendResponse(envelope.sender.id, response);
                 return deferred.resolve();
-            });
+            } else {
+                processPhotoMessage(envelope, user).
+                then(function(response) {
+                    sendResponse(envelope.sender.id, response);
+                    return deferred.resolve();
+                });
+            }
         }
         else if(!!envelope.message.text) {   // text - will really only process if user types MENU, HELP, or a question to send to help@printwithpixy.com
             logger.info("FB Messenger: Type is text");
@@ -118,11 +118,9 @@ function processPostback(envelope) {
 
         // Set merge fields to merge into message and URLS in case required.
         MERGE_FIELDS.messengerId = envelope.sender.id;
-        MERGE_FIELDS.userId = user._id || '';
-        MERGE_FIELDS.firstName = user.firstName || '';
-        MERGE_FIELDS.photoCount = "";
-
-        logger.info('### MERGE_FIELDS = ' + JSON.stringify(MERGE_FIELDS));
+        MERGE_FIELDS.userId = !!user ? user._id : '';
+        MERGE_FIELDS.firstName = !!user ? user.firstName : '';
+        MERGE_FIELDS.photoCount = '';
 
         /* Types are...
          * - MENU
@@ -153,12 +151,8 @@ function processPostback(envelope) {
                 response = config.facebook.messengerResponses.PHOTO_UPLOAD.DEFAULT;
             }
 
-            logger.info('### response = ' + JSON.stringify(response));
-
             // inject any variables into text & URLs if required
             response = replaceMergeFields(response);
-            
-            logger.info('### REPLACED response = ' + JSON.stringify(response));
 
             sendResponse(envelope.sender.id, response);
 
@@ -244,7 +238,40 @@ function processTextMessage(envelope, user) {
     logger.info("FB Messenger: Processing text");
 
     //TODO: handle various types of message.
+    /* Types are...
+     * - MENU
+     * - HELP
+     */
+    if(!!envelope.message.text) { // 
+        var response;
 
+        if (envelope.message.text.toUpperCase() === 'MENU') {
+            // check if logged-in
+            if(!user) {
+                logger.info("FB Messenger: User not found");
+                // Not a pixy user, respond with logged out menu
+                response = config.facebook.messengerResponses.MENU.DEFAULT;
+            } else {
+                response = config.facebook.messengerResponses.MENU.LOGGED_IN;
+            }
+
+        } else if (envelope.message.text.toUpperCase() === 'HELP') {
+            response = config.facebook.messengerResponses.HELP.DEFAULT;
+        } else {
+            // user has said something other than a menu option
+
+            // TODO: Is this a help request? How do we handle that?
+
+            return deferred.resolve();
+        }
+
+        // inject any variables into text & URLs if required
+        response = replaceMergeFields(response);
+
+        sendResponse(envelope.sender.id, response);
+
+        return deferred.resolve();
+    }
 
     logger.info("FB Messenger: processTextMessage = " + envelope.message.text);
     deferred.resolve(config.facebook.messengerResponses.HELP.DEFAULT);
@@ -286,7 +313,7 @@ Messenger.prototype.sendResponse = sendResponse
  * Replace any of the custom fields with user data.
  */
 function replaceMergeFields(response) {
-    logger.info('### start merge');
+
     if (response.template === 'button') {
 
         response.message.attachment.payload.text = response.message.attachment.payload.text.replace('{{firstName}}', MERGE_FIELDS.firstName);
@@ -304,7 +331,6 @@ function replaceMergeFields(response) {
         response.message.text = response.message.text.replace('{{photo-count}}', MERGE_FIELDS.photoCount);
     }
 
-    logger.info('### finish merge = ' + JSON.stringify(response));
     return response;
 }
 
