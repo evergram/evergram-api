@@ -193,11 +193,10 @@ function processPhotoMessage(envelope,user) {
 
     // for each image in attachements   - ### TODO: COULD BE ASYNC ISSUES WITH THIS???
     _.forEach(envelope.message.attachments, function(attachment) {
-
-        logger.info("### attachment: " + JSON.stringify(attachment));
-
         // skip video & audio
         if(attachment.type === 'image') {
+            logger.info('FB Messenger: processing image attachment.');
+
             var data = {
                 mid: envelope.message.mid,
                 timestamp: envelope.timestamp,
@@ -230,7 +229,7 @@ function processPhotoMessage(envelope,user) {
 
         deferred.resolve(response);
     }).fail(function(err) {
-        logger.err('FB Messenger: ' + err);
+        logger.err('FB Messenger: Failed to save image for user (id:' + user._id + ') - ' + err);
         deferred.reject(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED);
     });
 
@@ -243,8 +242,9 @@ function processPhotoMessage(envelope,user) {
 function processTextMessage(envelope, user) {
     var deferred = q.defer();
 
-    logger.info("FB Messenger: Processing text");
+    logger.info("FB Messenger: Processing text - " + JSON.stringify(envelope));
 
+    try {
     //TODO: handle various types of message.
     /* Types are...
      * - MENU
@@ -260,13 +260,16 @@ function processTextMessage(envelope, user) {
                 // Not a pixy user, respond with logged out menu
                 response = config.facebook.messengerResponses.MENU.DEFAULT;
             } else {
+                logger.info("FB Messenger: User found - " + user._id);
                 response = config.facebook.messengerResponses.MENU.LOGGED_IN;
             }
 
         } else if (envelope.message.text.toUpperCase() === 'HELP') {
+            logger.info("FB Messenger: HELP menu requested by user.");
             response = config.facebook.messengerResponses.HELP.DEFAULT;
         } else {
             // user has said something other than a menu option
+            logger.info('FB Messenger: Free-text from user - ' + envelope.message.text);
 
             // TODO: Is this a help request? How do we handle that?
 
