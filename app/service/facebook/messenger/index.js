@@ -33,10 +33,17 @@ function Messenger() {
 function processMessage(envelope) {
     var deferred = q.defer();
 
+    logger.info('FB Messenger: Processing Message');
+
     // Check this is a Pixy user (mid === facebook.messengerId)
     userManager.find({ criteria: { 'facebook.messengerId': ''+envelope.sender.id+'' }}).
     then(function(user) {
         
+        if (!!user) 
+            logger.info('FB Messenger: User found - ' + user._id);
+        else
+            logger.info('FB Messenger: User not found');
+
         // Set merge fields to merge into message and URLS in case required.
         MERGE_FIELDS.messengerId = envelope.sender.id;
         MERGE_FIELDS.userId = !!user ? user._id : '';
@@ -67,6 +74,7 @@ function processMessage(envelope) {
                 sendResponse(envelope.sender.id, response);
                 return deferred.resolve();
             } else {
+                logger.info("FB Messenger: User found.");
                 processPhotoMessage(envelope, user).
                 then(function(response) {
                     sendResponse(envelope.sender.id, response);
