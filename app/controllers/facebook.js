@@ -56,6 +56,7 @@ FacebookController.prototype.messageReceived = function(req, res) {
     	//deferredEvents.push(eventDefer);
 
 	    if(!!messageEvent.message) {
+	    	logger.info('FB Messenger: Message received');
 	    	// only process messages, ignore other types (e.g. delivery receipts)
 		    facebookService.messenger.processMessage(messageEvent).
 		    then(function(response) {
@@ -68,12 +69,15 @@ FacebookController.prototype.messageReceived = function(req, res) {
 		    });
 		} else if (messageEvent.optin) {
 			// Authentication event
+	    	logger.info('FB Messenger: Optin received');
 			//eventDefer.resolve();
         } else if (messageEvent.delivery) {
         	// Delivery receipt so ignore it for now
+	    	logger.info('FB Messenger: Delivery receipt received');
 			//eventDefer.resolve();
         } else if (messageEvent.postback) {
         	// postback so process user's selection
+	    	logger.info('FB Messenger: Postback received');
           	facebookService.messenger.processPostback(messageEvent).
 		    then(function(response) {
 		        logger.info('FB Messenger: Postback processed for sender.id ' + messageEvent.sender.id);
@@ -84,7 +88,7 @@ FacebookController.prototype.messageReceived = function(req, res) {
 		        //eventDefer.reject();
 		    });
         } else {
-        	logger.info("Webhook received unknown postbackEvent: ", messageEvent);
+        	logger.info("Webhook received unknown message type: ", messageEvent);
 		    //eventDefer.reject();
         }
 	})

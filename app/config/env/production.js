@@ -176,7 +176,7 @@ module.exports = {
 								buttons:[
 								{
 						    		type: 'web_url',
-						    		url: 'http://www.printwithpixy.com/FAQs',
+						    		url: 'http://www.printwithpixy.com/faq/',
 						    		title: 'See our online Help'
 						    	},
 								{
