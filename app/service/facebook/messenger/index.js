@@ -244,7 +244,6 @@ function processTextMessage(envelope, user) {
 
     logger.info("FB Messenger: Processing text - " + JSON.stringify(envelope));
 
-    try {
     //TODO: handle various types of message.
     /* Types are...
      * - MENU
