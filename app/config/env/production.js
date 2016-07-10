@@ -39,17 +39,17 @@ module.exports = {
 								{
 						    		type: 'web_url',
 						    		title: 'See our prices',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan'
+						    		url: process.ENV.PRODUCTION_SITE_URL + '/choose-a-plan'
 						    	},
 						    	{
 						    		type: 'web_url',
 						    		title: 'Signup',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan'
+						    		url: process.ENV.PRODUCTION_SITE_URL + '/choose-a-plan'
 						    	},
 						    	{
 						    		type: 'web_url',
 						    		title: 'Login',
-						    		url: 'http://www.printwithpixy.com/login'
+						    		url: process.ENV.PRODUCTION_SITE_URL + '/login'
 						    	}]
 							}
 						}
@@ -73,12 +73,12 @@ module.exports = {
 								buttons:[
 								{
 						    		type: 'web_url',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan?mid={{messengerId}}',
+						    		url: process.ENV.PRODUCTION_SITE_URL + '/choose-a-plan?mid={{messengerId}}',
 						    		title: 'Signup'
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}',
+						    		url: process.ENV.PRODUCTION_SECURE_SITE_URL + '/#/login?mid={{messengerId}}',
 						    		title: 'Login'
 						    	},
 						    	{
@@ -111,7 +111,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/my-account?id={{userId}}',
+						    		url: process.ENV.PRODUCTION_SECURE_SITE_URL + '/#/my-account?id={{userId}}',
 						    		title: 'View your order'
 						    	},
 						    	{
@@ -151,7 +151,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/my-account?id={{userId}}',
+						    		url: process.ENV.PRODUCTION_SECURE_SITE_URL + '/#/my-account?id={{userId}}',
 						    		title: 'View your order'
 						    	}]
 							}
@@ -176,7 +176,7 @@ module.exports = {
 								buttons:[
 								{
 						    		type: 'web_url',
-						    		url: 'http://www.printwithpixy.com/faq/',
+						    		url: process.ENV.PRODUCTION_SITE_URL + '/faq/',
 						    		title: 'See our online Help'
 						    	},
 								{
@@ -235,12 +235,12 @@ module.exports = {
 								buttons:[
 								{
 						    		type: 'web_url',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan?mid={{messengerId}}',
+						    		url: process.ENV.PRODUCTION_SITE_URL + '/choose-a-plan?mid={{messengerId}}',
 						    		title: 'Signup'
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}',
+						    		url: process.ENV.PRODUCTION_SECURE_SITE_URL + '/#/login?mid={{messengerId}}',
 						    		title: 'Login'
 						    	}]
 							}
