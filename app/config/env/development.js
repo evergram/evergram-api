@@ -182,7 +182,7 @@ module.exports = {
 								{
 						    		type: 'postback',
 						    		payload: 'HELP.REQUEST',
-						    		title: 'Ask a question'
+						    		title: 'Contact us'
 						    	}]
 							}
 						}
@@ -192,7 +192,7 @@ module.exports = {
 			    	template: 'text',
 			    	response_id: 'HELP.REQUEST',
 			    	message: {
-			    		text: "How can we help? I'll pass your message on to one of our Pixy team."
+			    		text: "Need some help? No problem. Just send an email to help@printwithpixy.com for assistance from one of our friendly Pixy staff."
 					}
 			    },
 		    	'REQUEST_SENT': {
