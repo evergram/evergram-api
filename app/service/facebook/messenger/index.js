@@ -332,8 +332,8 @@ function replaceMergeFields(response) {
         for (var i=0; i<response.message.attachment.payload.buttons.length; i++) {
             logger.info(i + ': ' + JSON.stringify(response.message.attachment.payload.buttons[i]));
             if (!!response.message.attachment.payload.buttons[i].url) {
-                response.message.attachment.payload.buttons[i].url.replace('{{messengerId}}', MERGE_FIELDS.messengerId);
-                response.message.attachment.payload.buttons[i].url.replace('{{userId}}', MERGE_FIELDS.userId);
+                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{messengerId}}', MERGE_FIELDS.messengerId);
+                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{userId}}', MERGE_FIELDS.userId);
             }
         }
     } else {
