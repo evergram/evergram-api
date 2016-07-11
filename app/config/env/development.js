@@ -39,17 +39,17 @@ module.exports = {
 								{
 						    		type: 'web_url',
 						    		title: 'See our prices',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan'
+						    		url: 'http://www.printwithpixy.com/choose-a-plan?mid={{messengerId}}'
 						    	},
 						    	{
 						    		type: 'web_url',
 						    		title: 'Signup',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan'
+						    		url: 'http://www.printwithpixy.com/choose-a-plan?mid={{messengerId}}'
 						    	},
 						    	{
 						    		type: 'web_url',
 						    		title: 'Login',
-						    		url: 'http://www.printwithpixy.com/login'
+						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}'
 						    	}]
 							}
 						}
