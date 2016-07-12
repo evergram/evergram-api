@@ -14,6 +14,7 @@ module.exports = {
     },
     facebook: {
 		api: '/v2.6',
+		pageId: '1668648863362204',
 		pageToken: 'CAANSeXKOXSwBANK1Rxgs8eyAzfKNtB1LYWtbiOEMPhBJOWl2lVH7T7z2JQLm2oMGMioZCGJWpvxZC0JOpGTzQZA0QOOg7RCcameZBUOUiGtGPgIC0Xs2vjqSU9RZCNQZCuVNpxkv0XHIcUokkvenhNFpGRfNn6idRKArWM1WwbUe20DzvZAvDT646VlF13FxxUq3uVZAG7ZAbSgZDZD',
 	    messengerResponses: {
 	    	'GET_STARTED': {
@@ -192,7 +193,7 @@ module.exports = {
 			    	template: 'text',
 			    	response_id: 'HELP.REQUEST',
 			    	message: {
-			    		text: "How can we help? I'll pass your message on to one of our Pixy team."
+			    		text: "Need some help? No problem. Just send an email to help@printwithpixy.com for assistance from one of our friendly Pixy staff."
 					}
 			    },
 		    	'REQUEST_SENT': {

@@ -14,6 +14,7 @@ module.exports = {
     },
     facebook: {
 		api: '/v2.6',
+		pageId: '1668648863362204',
 		pageToken: 'CAANSeXKOXSwBANK1Rxgs8eyAzfKNtB1LYWtbiOEMPhBJOWl2lVH7T7z2JQLm2oMGMioZCGJWpvxZC0JOpGTzQZA0QOOg7RCcameZBUOUiGtGPgIC0Xs2vjqSU9RZCNQZCuVNpxkv0XHIcUokkvenhNFpGRfNn6idRKArWM1WwbUe20DzvZAvDT646VlF13FxxUq3uVZAG7ZAbSgZDZD',
 	    messengerResponses: {
 	    	'GET_STARTED': {
@@ -48,7 +49,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		title: 'Login',
+						    		title: 'Connect your Pixy account',
 						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}'
 						    	}]
 							}
@@ -79,7 +80,7 @@ module.exports = {
 						    	{
 						    		type: 'web_url',
 						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}',
-						    		title: 'Login'
+						    		title: 'Connect your Pixy account'
 						    	},
 						    	{
 						    		type: 'postback',
