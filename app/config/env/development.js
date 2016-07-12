@@ -54,7 +54,7 @@ module.exports = {
 						    	{
 						    		type: 'web_url',
 						    		title: 'Connect your Pixy account',
-						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}'
+						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}'
 						    	}]
 							}
 						}
@@ -83,7 +83,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}',
+						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}',
 						    		title: 'Connect your Pixy account'
 						    	},
 						    	{
@@ -245,8 +245,8 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}',
-						    		title: 'Login'
+						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}',
+						    		title: 'Connect your Pixy account'
 						    	}]
 							}
 						}

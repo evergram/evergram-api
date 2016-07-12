@@ -39,18 +39,22 @@ module.exports = {
 								buttons:[
 								{
 						    		type: 'web_url',
+						    		title: 'Find out more',
+						    		url: 'http://www.printwithpixy.com/?mid={{messengerId}}'
+						    	},{
+						    		type: 'web_url',
 						    		title: 'See our prices',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan'
+						    		url: 'http://www.printwithpixy.com/choose-a-plan?mid={{messengerId}}'
 						    	},
 						    	{
 						    		type: 'web_url',
 						    		title: 'Signup',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan'
+						    		url: 'http://www.printwithpixy.com/choose-a-plan?mid={{messengerId}}'
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		title: 'Login',
-						    		url: 'http://www.printwithpixy.com/login'
+						    		title: 'Connect your Pixy account',
+						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}'
 						    	}]
 							}
 						}
@@ -79,8 +83,8 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}',
-						    		title: 'Login'
+						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}',
+						    		title: 'Connect your Pixy account'
 						    	},
 						    	{
 						    		type: 'postback',
@@ -183,7 +187,7 @@ module.exports = {
 								{
 						    		type: 'postback',
 						    		payload: 'HELP.REQUEST',
-						    		title: 'Ask a question'
+						    		title: 'Contact us'
 						    	}]
 							}
 						}
@@ -241,8 +245,8 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/login?mid={{messengerId}}',
-						    		title: 'Login'
+						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}',
+						    		title: 'Connect your Pixy account'
 						    	}]
 							}
 						}

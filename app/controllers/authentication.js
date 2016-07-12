@@ -10,6 +10,7 @@ var objectUtil = common.utils.object;
 var REDIRECT_URL_KEY = 'redirect_url';
 var REFERRING_USER_KEY = 'referring_user';
 var AUTH_ACTION_KEY = 'action';
+var MESSENGER_ID_KEY = 'mid';
 var ID_KEY = 'id';
 var AUTH_ACTIONS = {
     SIGNUP: 'signup',
@@ -46,6 +47,7 @@ AuthenticationController.prototype.beginFacebook = function(req, res, next) {
         action: req.query[AUTH_ACTION_KEY],
         redirectUrl: req.query[REDIRECT_URL_KEY],
         referringUser: req.query[REFERRING_USER_KEY],
+        messengerId: req.query[MESSENGER_ID_KEY],
         id: req.query['id']
     };
     delete req.query[AUTH_ACTION_KEY];
@@ -138,6 +140,7 @@ AuthenticationController.prototype.callbackFacebook = function(req, res) {
  */
 AuthenticationController.prototype.beginInstagram = function(req, res, next) {
     logger.info('Start Instagram Auth');
+    logger.info('### params begin: ' + req.query[MESSENGER_ID_KEY]);
 
     // allows us to pass through any querystring params
     // get the redirect query if it is present in the querystring
@@ -145,6 +148,7 @@ AuthenticationController.prototype.beginInstagram = function(req, res, next) {
         action: req.query[AUTH_ACTION_KEY],
         redirectUrl: req.query[REDIRECT_URL_KEY],
         referringUser: req.query[REFERRING_USER_KEY],
+        messengerId: req.query[MESSENGER_ID_KEY],
         id: req.query[ID_KEY]
     };
     delete req.query[AUTH_ACTION_KEY];
@@ -179,6 +183,7 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
     // append any querystring params that were passed
     var params = objectUtil.param(req.session.auth.params);
     logger.info('User action: ' + action);
+    logger.info('### params callback: ' + params);
 
     //handle signup
     if (!action || action === AUTH_ACTIONS.SIGNUP) {

@@ -55,7 +55,7 @@ module.exports = {
 						    	{
 						    		type: 'web_url',
 						    		title: 'Connect your Pixy account',
-						    		url: process.env.PRODUCTION_SECURE_SITE_URL + '/#/login?mid={{messengerId}}'
+						    		url: process.env.PRODUCTION_SECURE_SITE_URL + '/connect?service=messenger&mid={{messengerId}}'
 						    	}]
 							}
 						}
@@ -84,7 +84,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: process.env.PRODUCTION_SECURE_SITE_URL + '/#/login?mid={{messengerId}}',
+						    		url: process.env.PRODUCTION_SECURE_SITE_URL + '/connect?service=messenger&mid={{messengerId}}',
 						    		title: 'Connect your Pixy account'
 						    	},
 						    	{
@@ -246,7 +246,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: process.env.PRODUCTION_SECURE_SITE_URL + '/#/login?mid={{messengerId}}',
+						    		url: process.env.PRODUCTION_SECURE_SITE_URL + '/connect?service=messenger&mid={{messengerId}}',
 						    		title: 'Connect your Pixy account'
 						    	}]
 							}
