@@ -29,7 +29,7 @@ module.exports = {
 								text:"Welcome to Pixy, the easiest way to print your photos.\n" +
 										"\n" +
 										"How Pixy works:\n" +
-										"1. Signup/Login to Pixy.\n" +
+										"1. Signup/Connect your Pixy account.\n" +
 										"2. Send us your photos, right here in messenger.\n" +
 										"3. We print & send your photos at the end of the month.\n" +
 										"\n" +
@@ -53,7 +53,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		title: 'Connect your Pixy account',
+						    		title: 'Connect your account',
 						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}'
 						    	}]
 							}
@@ -70,7 +70,7 @@ module.exports = {
 							type:'template',
 							payload: {
 								template_type:'button',
-								text:"Hi there. To use Pixy, please signup or login to your Pixy account.\n" +
+								text:"Hi there. To use Pixy, please signup or connect your Pixy account.\n" +
 										"\n" +
 										"* To upload photos, send them to us in this chat and we'll add them to your next order.\n" +
 										"* Text us the word MENU at any time to see options.\n" +
@@ -84,7 +84,7 @@ module.exports = {
 						    	{
 						    		type: 'web_url',
 						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}',
-						    		title: 'Connect your Pixy account'
+						    		title: 'Connect your account'
 						    	},
 						    	{
 						    		type: 'postback',
