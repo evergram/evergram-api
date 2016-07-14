@@ -16,8 +16,6 @@ var logger = common.utils.logger;
 var imagesetManager = require('../imagesets');
 var facebookImageMapper = common.mapper.facebookMessengerImage;
 
-var MERGE_FIELDS = {};
-
 /**
  * A service that handles all Facebook Messenger requests
  *
@@ -43,12 +41,6 @@ function processMessage(envelope) {
             logger.info('FB Messenger: User found - ' + user._id);
         else
             logger.info('FB Messenger: User not found');
-
-        // Set merge fields to merge into message and URLS in case required.
-        MERGE_FIELDS.messengerId = envelope.sender.id;
-        MERGE_FIELDS.userId = !!user ? user._id : '';
-        MERGE_FIELDS.firstName = !!user ? user.firstName : '';
-        MERGE_FIELDS.photoCount = '';
 
         /* Is a pixy user, so process message... types are...
          * - photo: uploads photo to current imageset, tracks photo, & responds with new photo count
@@ -87,7 +79,7 @@ function processMessage(envelope) {
             processTextMessage(envelope, user).
             then(function(response) {
                 // inject messengerId if required
-                response = replaceMergeFields(response);
+                response = replaceMergeFields(response, getMergeFields(user, envelope, null));
 
                 sendResponse(envelope.sender.id, response);
                 return deferred.resolve();
@@ -124,12 +116,6 @@ function processPostback(envelope) {
     then(function(user) {
         logger.info('### Returned from User search - ' + JSON.stringify(user));
 
-        // Set merge fields to merge into message and URLS in case required.
-        MERGE_FIELDS.messengerId = envelope.sender.id;
-        MERGE_FIELDS.userId = !!user ? user._id : '';
-        MERGE_FIELDS.firstName = !!user ? user.firstName : '';
-        MERGE_FIELDS.photoCount = '';
-
         /* Types are...
          * - MENU
          * - HELP
@@ -160,7 +146,7 @@ function processPostback(envelope) {
             }
 
             // inject any variables into text & URLs if required
-            response = replaceMergeFields(response);
+            response = replaceMergeFields(response, getMergeFields(user, envelope, null));
 
             sendResponse(envelope.sender.id, response);
 
@@ -221,9 +207,9 @@ function processPhotoMessage(envelope,user) {
         // TODO: Find a way to manage variable insertion into responses
         logger.info('FB Messenger: Images successfully saved for user ' + user.getUsername());
 
-        MERGE_FIELDS.photoCount = imageset.length;
+        mergeFields['photoCount'] = imageset.length;
 
-        var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE); // inject any variables into text & URLs if required
+        var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, getMergeFields(user, envelope, imageset)); // inject any variables into text & URLs if required
 
         logger.info('### response: ' + JSON.stringify(response));
 
@@ -276,7 +262,7 @@ function processTextMessage(envelope, user) {
         }
 
         // inject any variables into text & URLs if required
-        response = replaceMergeFields(response);
+        response = replaceMergeFields(response, getMergeFields(user, envelope, null));
 
         sendResponse(envelope.sender.id, response);
 
@@ -310,9 +296,9 @@ function sendResponse(recipient,data) {
         }
       }, function(error, response, body) {
         if (error) {
-          console.log('Error sending message: ', error);
+          logger.info('Error sending message: ', error);
         } else if (response.body.error) {
-          console.log('Error: ', response.body.error);
+          logger.info('Error: ', response.body.error);
         }
     });
 }
@@ -322,26 +308,42 @@ Messenger.prototype.sendResponse = sendResponse
 /**
  * Replace any of the custom fields with user data.
  */
-function replaceMergeFields(response) {
+function replaceMergeFields(response, mergeFields) {
 
     if (response.template === 'button') {
 
-        response.message.attachment.payload.text = response.message.attachment.payload.text.replace('{{firstName}}', MERGE_FIELDS.firstName);
-        response.message.attachment.payload.text = response.message.attachment.payload.text.replace('{{photo-count}}', MERGE_FIELDS.photoCount);
+        response.message.attachment.payload.text = response.message.attachment.payload.text.replace('{{firstName}}', mergeFields['firstName']);
+        response.message.attachment.payload.text = response.message.attachment.payload.text.replace('{{photo-count}}', mergeFields['photoCount']);
 
         for (var i=0; i<response.message.attachment.payload.buttons.length; i++) {
             logger.info(i + ': ' + JSON.stringify(response.message.attachment.payload.buttons[i]));
             if (!!response.message.attachment.payload.buttons[i].url) {
-                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{messengerId}}', MERGE_FIELDS.messengerId);
-                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{userId}}', MERGE_FIELDS.userId);
+                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{messengerId}}', mergeFields['messengerId']);
+                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{userId}}', mergeFields['userId']);
             }
         }
     } else {
-        response.message.text = response.message.text.replace('{{firstName}}', MERGE_FIELDS.firstName);
-        response.message.text = response.message.text.replace('{{photo-count}}', MERGE_FIELDS.photoCount);
+        response.message.text = response.message.text.replace('{{firstName}}', mergeFields['firstName']);
+        response.message.text = response.message.text.replace('{{photo-count}}', mergeFields['photoCount']);
     }
-
+    logger.info('RESPONSE: ' + JSON.stringify(response));
     return response;
+}
+
+/**
+ * Get the merge field values to be used in the responses if available.
+ */
+function getMergeFields(user, envelope, imageset) {
+
+    var mergeFields = [];
+
+    // Set merge fields to merge into message and URLS in case required.
+    mergeFields['messengerId'] = envelope.sender.id;
+    mergeFields['userId'] = !!user ? user._id : '';
+    mergeFields['firstName'] = !!user ? user.firstName : '';
+    mergeFields['photoCount'] = !!imageset ? imageset.length : '';
+
+    return mergeFields;
 }
 
 /**
