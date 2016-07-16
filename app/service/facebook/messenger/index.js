@@ -258,7 +258,20 @@ function processTextMessage(envelope, user) {
             logger.info('FB Messenger: Free-text from user - ' + envelope.message.text);
 
             // TODO: Is this a help request? How do we handle that?
-
+            if (envelope.message.text.toLowerCase() === ('hi' || 'hello' || 'hey')) {
+                // check if logged-in
+                if(!user) {
+                    logger.info("FB Messenger: User not found");
+                    // Not a pixy user, respond with logged out menu
+                    response = config.facebook.messengerResponses.GREETING.DEFAULT;
+                } else {
+                    logger.info("FB Messenger: User found - " + user._id);
+                    response = config.facebook.messengerResponses.GREETING.LOGGED_IN;
+                }
+            } else {
+                // respond with a helpful message
+                response = config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT;
+            }
             return deferred.resolve();
         }
 

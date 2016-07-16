@@ -61,6 +61,61 @@ module.exports = {
 				    }
 			    }
 			},
+			'GREETING': {
+				'DEFAULT': {
+					template: 'button',
+			    	response_id: 'GREETING',
+			    	message: {
+			    		attachment: {
+							type:'template',
+							payload: {
+								template_type:'button',
+								text:"Hi there, I'm the friendly Pixy robot. How can I help? ;)",
+								buttons:[
+								{
+						    		type: 'postback',
+						    		payload: 'MENU',
+						    		title: 'See menu options'
+						    	},
+						    	{
+						    		type: 'postback',
+						    		payload: 'HELP',
+						    		title: 'See our help'
+						    	}]
+							}
+						}
+				    }
+				},
+				'LOGGED_IN': {
+					template: 'button',
+			    	response_id: 'GREETING.LOGGED_IN',
+			    	message: {
+			    		attachment: {
+							type:'template',
+							payload: {
+								template_type:'button',
+								text:"Hi {{firstName}}, how can I help? ;)",
+								buttons:[
+								{
+						    		type: 'postback',
+						    		payload: 'PHOTO_UPLOAD.START',
+						    		title: 'Upload photos'
+						    	},
+								{
+						    		type: 'postback',
+						    		payload: 'MENU',
+						    		title: 'See menu options'
+						    	},
+						    	{
+						    		type: 'postback',
+						    		payload: 'HELP',
+						    		title: 'Get some help'
+						    	}]
+							}
+						}
+				    }
+				}
+			},
 			'MENU': {
 				'DEFAULT': {
 			    	template: 'button',
@@ -270,6 +325,30 @@ module.exports = {
 			    	message: {
 			    		text: "Oh no! Something went wrong with the upload. Please try again. If this happens a lot check your internet hasn't dropped out or contact us for help."
 			    	}
+			    },
+			    'UNKNOWN_INPUT': {
+			    	template: 'button',
+			    	response_id: 'ERROR.USER_NOT_FOUND',
+			    	message: {
+			    		attachment: {
+							type:'template',
+							payload: {
+								template_type:'button',
+								text:"I'm not sure what you mean by that since I'm just a robot. Maybe try one of the options below instead? ;)",
+								buttons:[
+								{
+						    		type: 'postback',
+						    		payload: 'MENU',
+						    		title: 'Show menu'
+						    	},
+						    	{
+						    		type: 'postback',
+						    		payload: 'HELP',
+						    		title: 'See our help'
+						    	}]
+							}
+						}
+				    }
 			    }
 		    }
     	}
