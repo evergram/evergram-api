@@ -341,7 +341,7 @@ function getMergeFields(user, envelope, imageset) {
     mergeFields['messengerId'] = envelope.sender.id;
     mergeFields['userId'] = !!user ? user._id : '';
     mergeFields['firstName'] = !!user ? user.firstName : '';
-    mergeFields['photoCount'] = !!imageset ? imageset.length : '';
+    mergeFields['photoCount'] = !!imageset ? imageset.images.length : '';
 
     return mergeFields;
 }
