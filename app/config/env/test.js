@@ -194,11 +194,23 @@ module.exports = {
 				    }
 			    },
 		    	'REQUEST': {
-			    	template: 'text',
+			    	template: 'button',
 			    	response_id: 'HELP.REQUEST',
 			    	message: {
-			    		text: "Need some help? No problem. Just send an email to help@printwithpixy.com for assistance from one of our friendly Pixy staff."
-					}
+			    		attachment: {
+							type:'template',
+							payload: {
+								template_type:'button',
+								text:"Need some help? No problem. Just send an email and one of our friendly Pixy staff will be in-touch.",
+								buttons:[								
+								{
+						    		type: 'web_url',
+						    		url: 'mailto:help@printwithpixy.com',
+						    		title: 'Email us'
+						    	}]
+							}
+						}
+				    }
 			    },
 		    	'REQUEST_SENT': {
 			    	template: 'text',

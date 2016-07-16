@@ -63,6 +63,8 @@ function processMessage(envelope) {
                 logger.info("FB Messenger: User not found");
                 // Not a pixy user, respond with a message prompting to signup or connet their account?
                 var response = config.facebook.messengerResponses.ERROR.USER_NOT_FOUND || config.facebook.messengerResponses.ERROR.DEFAULT;
+                response = replaceMergeFields(response, getMergeFields(user, envelope, null));
+
                 sendResponse(envelope.sender.id, response);
                 return deferred.resolve();
             } else {
@@ -207,16 +209,14 @@ function processPhotoMessage(envelope,user) {
         // TODO: Find a way to manage variable insertion into responses
         logger.info('FB Messenger: Images successfully saved for user ' + user.getUsername());
 
-        mergeFields['photoCount'] = imageset.length;
-
-        var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, getMergeFields(user, envelope, imageset)); // inject any variables into text & URLs if required
-
-        logger.info('### response: ' + JSON.stringify(response));
-
+        // inject any variables into text & URLs if required
+        var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, getMergeFields(user, envelope, imageset)); 
         deferred.resolve(response);
+
     }).fail(function(err) {
         logger.err('FB Messenger: Failed to save image for user (id:' + user._id + ') - ' + err);
-        deferred.reject(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED);
+        var response = replaceMergeFields(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, getMergeFields(user, envelope, null));
+        deferred.reject(response);
     });
 
     return deferred.promise;
