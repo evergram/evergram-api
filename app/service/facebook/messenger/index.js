@@ -205,8 +205,9 @@ function processPhotoMessage(envelope,user) {
     //pass array to imageset manager.
     imagesetManager.saveImages(user,images).
     then(function(imageset) {
-        // TODO: Check printableImageSet is what's returned here so we can get the photo count for response message.
-        // TODO: Find a way to manage variable insertion into responses
+
+        // TODO: printableImageSet is currently undefined. Need to update imagesets/index.js if we want to get the photo count for response message.
+        
         logger.info('FB Messenger: Images successfully saved for user ' + user.getUsername());
 
         // inject any variables into text & URLs if required

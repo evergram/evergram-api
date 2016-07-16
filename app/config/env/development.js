@@ -147,7 +147,7 @@ module.exports = {
 							type:'template',
 							payload: {
 								template_type:'button',
-								text:'All done! Your order now has {{photo-count}} photos.',
+								text:'All done! These photos have been added to your order.',
 								buttons:[
 								{
 						    		type: 'postback',
