@@ -41,10 +41,6 @@ module.exports = {
 						    		type: 'web_url',
 						    		title: 'Find out more',
 						    		url: 'http://www.printwithpixy.com/?mid={{messengerId}}'
-						    	},{
-						    		type: 'web_url',
-						    		title: 'See our prices',
-						    		url: 'http://www.printwithpixy.com/choose-a-plan?mid={{messengerId}}'
 						    	},
 						    	{
 						    		type: 'web_url',

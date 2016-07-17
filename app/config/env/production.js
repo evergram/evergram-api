@@ -44,11 +44,6 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		title: 'See our prices',
-						    		url: process.env.PRODUCTION_SITE_URL + '/choose-a-plan?mid={{messengerId}}'
-						    	},
-						    	{
-						    		type: 'web_url',
 						    		title: 'Signup',
 						    		url: process.env.PRODUCTION_SITE_URL + '/choose-a-plan?mid={{messengerId}}'
 						    	},
