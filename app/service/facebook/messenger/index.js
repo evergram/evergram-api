@@ -132,9 +132,9 @@ function processPostback(envelope) {
             if (envelope.postback.payload === 'MENU') {
                 // If a pixy user, respond with logged in menu, else respond with logged out menu
                 response = !!user ? config.facebook.messengerResponses.MENU.LOGGED_IN : config.facebook.messengerResponses.MENU.DEFAULT;
-            } else if (envelope.postback.payload === 'GREETING') {
+            } else if (envelope.postback.payload === 'SIGNUP_COMPLETE') {
                 // If a pixy user, respond with logged in menu, else respond with logged out menu
-                response = !!user ? config.facebook.messengerResponses.GREETING.LOGGED_IN : config.facebook.messengerResponses.GREETING.DEFAULT;
+                response = !!user ? config.facebook.messengerResponses.SIGNUP_COMPLETE.DEFAULT : config.facebook.messengerResponses.ERROR.DEFAULT;
             } else if (envelope.postback.payload === 'GET_STARTED') {
                 response = config.facebook.messengerResponses.GET_STARTED.DEFAULT;
             } else if (envelope.postback.payload === 'HELP') {
