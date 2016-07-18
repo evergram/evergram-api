@@ -133,7 +133,7 @@ function processPostback(envelope) {
                 // If a pixy user, respond with logged in menu, else respond with logged out menu
                 response = !!user ? config.facebook.messengerResponses.MENU.LOGGED_IN : config.facebook.messengerResponses.MENU.DEFAULT;
             } else if (envelope.postback.payload === 'SIGNUP_COMPLETE') {
-                // If a pixy user, respond with logged in menu, else respond with logged out menu
+                // If a pixy user, respond with signup complete message, else respond with error
                 response = !!user ? config.facebook.messengerResponses.SIGNUP_COMPLETE.DEFAULT : config.facebook.messengerResponses.ERROR.DEFAULT;
             } else if (envelope.postback.payload === 'GET_STARTED') {
                 response = config.facebook.messengerResponses.GET_STARTED.DEFAULT;
@@ -260,8 +260,8 @@ function processTextMessage(envelope, user) {
                 // check if logged-in
                 response = !!user ? config.facebook.messengerResponses.GREETING.LOGGED_IN : config.facebook.messengerResponses.GREETING.DEFAULT;
             } else {
-                // respond with a helpful message
-                response = config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT;
+                // respond with a helpful message... COMMENTED THIS OUT AS IT FELT WEIRD
+                //response = config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT;
 
                 // notify us the user has said something that might need our help
                 notifyPixySupportEmail(user, envelope);
@@ -269,7 +269,8 @@ function processTextMessage(envelope, user) {
         }
 
     } else {
-        response = config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT;
+        //  COMMENTED THIS OUT AS IT FELT WEIRD
+        //response = config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT;
         // notify us the user has said something that might need our help
         notifyPixySupportEmail(user, envelope);
     }
