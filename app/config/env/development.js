@@ -6,6 +6,10 @@ module.exports = {
     api: {
         version: '/v3'
     },
+    email: {
+    	support: 'help@printwithpixy.com',
+    	sender: 'messenger@printwithpixy.com'
+    },
     stripe: {
         secretAccessKey: 'sk_test_KN8z6UJtLbBWITp7FZUGiWKI'
     },
@@ -14,6 +18,7 @@ module.exports = {
     },
     facebook: {
 		api: '/v2.6',
+		businessId: '1749526148607808',
 		pageId: '1668648863362204',
 		pageToken: 'CAANSeXKOXSwBANK1Rxgs8eyAzfKNtB1LYWtbiOEMPhBJOWl2lVH7T7z2JQLm2oMGMioZCGJWpvxZC0JOpGTzQZA0QOOg7RCcameZBUOUiGtGPgIC0Xs2vjqSU9RZCNQZCuVNpxkv0XHIcUokkvenhNFpGRfNn6idRKArWM1WwbUe20DzvZAvDT646VlF13FxxUq3uVZAG7ZAbSgZDZD',
 	    messengerResponses: {
@@ -324,7 +329,7 @@ module.exports = {
 			    },
 			    'UNKNOWN_INPUT': {
 			    	template: 'button',
-			    	response_id: 'ERROR.USER_NOT_FOUND',
+			    	response_id: 'ERROR.UNKNOWN_INPUT',
 			    	message: {
 			    		attachment: {
 							type:'template',

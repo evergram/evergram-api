@@ -11,6 +11,7 @@ var q = require('q');
 var common = require('evergram-common');
 var config = require('../../../config');
 var trackingManager = require('../tracking');
+var emailManager = common.email.manager;
 var userManager = common.user.manager;
 var logger = common.utils.logger;
 var imagesetManager = require('../imagesets');
@@ -78,20 +79,16 @@ function processMessage(envelope) {
         }
         else if(!!envelope.message.text) {   // text - will really only process if user types MENU, HELP, or a question to send to help@printwithpixy.com
             logger.info("FB Messenger: Type is text");
-            processTextMessage(envelope, user).
-            then(function(response) {
-                // inject messengerId if required
-                response = replaceMergeFields(response, getMergeFields(user, envelope, null));
-
-                sendResponse(envelope.sender.id, response);
-                return deferred.resolve();
-            });
+            
+            processTextMessage(envelope, user);
+            
+            return deferred.resolve();
         } else { 
             logger.info("FB Messenger: Un-recognised message: " + JSON.stringify(envelope));
             deferred.reject();
         }
     }).fail(function(err) {
-        logger.err('FB Messenger: ' + err);
+        logger.error('FB Messenger: ' + err);
         sendResponse(envelope.sender.id, config.facebook.messengerResponses.ERROR.DEFAULT);
         return deferred.reject(err);
     });
@@ -116,9 +113,14 @@ function processPostback(envelope) {
     // Check this is a Pixy user (mid === facebook.messengerId)
     userManager.find({ criteria: { 'facebook.messengerId': ''+envelope.sender.id+'' }}).
     then(function(user) {
-        logger.info('### Returned from User search - ' + JSON.stringify(user));
+
+        if (!!user) 
+            logger.info('FB Messenger: User found - ' + user._id);
+        else
+            logger.info('FB Messenger: User not found');
 
         /* Types are...
+         * - GREETING.LOGGED_IN
          * - MENU
          * - HELP
          * - PHOTO_UPLOAD.START
@@ -128,15 +130,11 @@ function processPostback(envelope) {
             var response;
 
             if (envelope.postback.payload === 'MENU') {
-                // check if logged-in
-                if(!user) {
-                    logger.info("FB Messenger: User not found");
-                    // Not a pixy user, respond with logged out menu
-                    response = config.facebook.messengerResponses.MENU.DEFAULT;
-                } else {
-                    response = config.facebook.messengerResponses.MENU.LOGGED_IN;
-                }
-
+                // If a pixy user, respond with logged in menu, else respond with logged out menu
+                response = !!user ? config.facebook.messengerResponses.MENU.LOGGED_IN : config.facebook.messengerResponses.MENU.DEFAULT;
+            } else if (envelope.postback.payload === 'GREETING') {
+                // If a pixy user, respond with logged in menu, else respond with logged out menu
+                response = !!user ? config.facebook.messengerResponses.GREETING.LOGGED_IN : config.facebook.messengerResponses.GREETING.DEFAULT;
             } else if (envelope.postback.payload === 'GET_STARTED') {
                 response = config.facebook.messengerResponses.GET_STARTED.DEFAULT;
             } else if (envelope.postback.payload === 'HELP') {
@@ -158,7 +156,7 @@ function processPostback(envelope) {
             deferred.reject();
         }
     }).fail(function(err) {
-        logger.err('FB Messenger: ' + err);
+        logger.error('FB Messenger: ' + err);
         sendResponse(envelope.sender.id, config.facebook.messengerResponses.ERROR.DEFAULT);
         return deferred.reject(err);
     });
@@ -215,7 +213,7 @@ function processPhotoMessage(envelope,user) {
         deferred.resolve(response);
 
     }).fail(function(err) {
-        logger.err('FB Messenger: Failed to save image for user (id:' + user._id + ') - ' + err);
+        logger.error('FB Messenger: Failed to save image for user (id:' + user._id + ') - ' + err);
         var response = replaceMergeFields(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, getMergeFields(user, envelope, null));
         deferred.reject(response);
     });
@@ -225,13 +223,18 @@ function processPhotoMessage(envelope,user) {
 
 /**
  *  Processes a message (messaging object) if it contains image attachements
+ *  NOTE: Not asynchronous method.
  */
 function processTextMessage(envelope, user) {
-    var deferred = q.defer();
 
     logger.info("FB Messenger: Processing text - " + JSON.stringify(envelope));
 
-    //TODO: handle various types of message.
+    if(!user) {
+        logger.info("FB Messenger: User not found");
+    } else {
+        logger.info("FB Messenger: User found - " + user._id);
+    }
+
     /* Types are...
      * - MENU
      * - HELP
@@ -240,16 +243,9 @@ function processTextMessage(envelope, user) {
         var response;
 
         if (envelope.message.text.toUpperCase() === 'MENU') {
+            logger.info("FB Messenger: MENU requested by user.");
             // check if logged-in
-            if(!user) {
-                logger.info("FB Messenger: User not found");
-                // Not a pixy user, respond with logged out menu
-                response = config.facebook.messengerResponses.MENU.DEFAULT;
-            } else {
-                logger.info("FB Messenger: User found - " + user._id);
-                response = config.facebook.messengerResponses.MENU.LOGGED_IN;
-            }
-
+            response = !!user ? config.facebook.messengerResponses.MENU.LOGGED_IN : config.facebook.messengerResponses.MENU.DEFAULT;
         } else if (envelope.message.text.toUpperCase() === 'HELP') {
             logger.info("FB Messenger: HELP menu requested by user.");
             response = config.facebook.messengerResponses.HELP.DEFAULT;
@@ -257,36 +253,31 @@ function processTextMessage(envelope, user) {
             // user has said something other than a menu option
             logger.info('FB Messenger: Free-text from user - ' + envelope.message.text);
 
-            // TODO: Is this a help request? How do we handle that?
-            if (envelope.message.text.toLowerCase() === ('hi' || 'hello' || 'hey')) {
+            if ((envelope.message.text.toUpperCase() === 'HI') || 
+                (envelope.message.text.toUpperCase() === 'HELLO') || 
+                (envelope.message.text.toUpperCase() === 'HEY')) {
+
                 // check if logged-in
-                if(!user) {
-                    logger.info("FB Messenger: User not found");
-                    // Not a pixy user, respond with logged out menu
-                    response = config.facebook.messengerResponses.GREETING.DEFAULT;
-                } else {
-                    logger.info("FB Messenger: User found - " + user._id);
-                    response = config.facebook.messengerResponses.GREETING.LOGGED_IN;
-                }
+                response = !!user ? config.facebook.messengerResponses.GREETING.LOGGED_IN : config.facebook.messengerResponses.GREETING.DEFAULT;
             } else {
                 // respond with a helpful message
                 response = config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT;
+
+                // notify us the user has said something that might need our help
+                notifyPixySupportEmail(user, envelope);
             }
-            return deferred.resolve();
         }
 
-        // inject any variables into text & URLs if required
-        response = replaceMergeFields(response, getMergeFields(user, envelope, null));
-
-        sendResponse(envelope.sender.id, response);
-
-        return deferred.resolve();
+    } else {
+        response = config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT;
+        // notify us the user has said something that might need our help
+        notifyPixySupportEmail(user, envelope);
     }
 
-    logger.info("FB Messenger: processTextMessage = " + envelope.message.text);
-    deferred.resolve(config.facebook.messengerResponses.HELP.DEFAULT);
+    // inject any variables into text & URLs if required
+    response = replaceMergeFields(response, getMergeFields(user, envelope, null));
 
-    return deferred.promise;
+    sendResponse(envelope.sender.id, response);
 }
 
 
@@ -358,6 +349,42 @@ function getMergeFields(user, envelope, imageset) {
     mergeFields['photoCount'] = !!imageset ? imageset.images.length : '';
 
     return mergeFields;
+}
+
+/**
+ * Helper function to let us know when a user has said something via messenger that hasn't met any of the preset options so might need help.
+ * NOTE: Only caters to Text messages at the moment.
+ */
+function notifyPixySupportEmail(user, envelope) {
+
+    logger.info('FB Messenger: Sending notification to help@printwithpixy.com for user ' + envelope.sender.id);
+
+    var toEmail = config.email.support;
+    var fromEmail = config.email.sender;
+    var name = !!user ? user.firstName + ' ' + user.lastName : 'A user';
+    var userId = !!user ? user._id : '';
+    var message = envelope.message.text;
+    var messageURL = 'https://business.facebook.com/pixy/messages/?business_id=' + config.facebook.businessId + '&mid=' +envelope.sender.id+ '&timestamp=' + envelope.timestamp;
+
+    var subject = '[Messenger bot] ' + name + ' might need some help';
+    var message = 'This message was received via chat and wasn\'t recognised...<br><br>';
+
+    message += '<b>Name:</b> '+ name + '<br>';
+    message += '<b>Pixy ID:</b> '+ userId + '<br>';
+    message += '<b>Time:</b> '+  moment().format('MMMM Do YYYY, h:mm:ss a') + '<br><br>';
+
+    message += '<b>Message:</b> '+ message + '<br><br>';
+    message += '<a href="' + messageURL + '">View conversation</a>';
+
+    logger.info('FB Messenger: Sending email to ' + toEmail + '.');
+
+    emailManager.send(toEmail, fromEmail, subject, message).
+        then(function(result) {
+            logger.info('FB Messenger: Help notification sent for user ' + envelope.sender.id);
+        }).
+        fail(function(err) {
+            logger.error('FB Messenger: Error sending help notification: ' + err);
+        });
 }
 
 /**
