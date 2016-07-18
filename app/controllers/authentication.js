@@ -107,7 +107,13 @@ AuthenticationController.prototype.callbackFacebook = function(req, res) {
         }
     } else if (action === AUTH_ACTIONS.CONNECT) {
         if (user.signupComplete === true) {
-            trackingManager.trackConnectedService(user, 'Facebook');
+
+            if (!!req.session.auth.messengerId) {
+                trackingManager.trackConnectedService(user, 'Messenger');
+            } else {
+                trackingManager.trackConnectedService(user, 'Facebook');
+            }
+            
             if (!redirect) {
                 redirect = common.config.facebook.redirect.connectSuccess;
             }
@@ -221,7 +227,13 @@ AuthenticationController.prototype.callbackInstagram = function(req, res) {
         }
     } else if (action === AUTH_ACTIONS.CONNECT) {
         if (user.signupComplete === true) {
-            trackingManager.trackConnectedService(user, 'Instagram');
+            
+            if (!!req.session.auth.messengerId) {
+                trackingManager.trackConnectedService(user, 'Messenger');
+            } else {
+                trackingManager.trackConnectedService(user, 'Instagram');
+            }
+
             if (!redirect) {
                 redirect = common.config.instagram.redirect.connectSuccess;
             }
