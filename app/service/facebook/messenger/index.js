@@ -363,8 +363,8 @@ function notifyPixySupportEmail(user, envelope) {
     var fromEmail = config.email.sender;
     var name = !!user ? user.firstName + ' ' + user.lastName : 'A user';
     var userId = !!user ? user._id : '';
-    var message = envelope.message.text;
-    var messageURL = 'https://business.facebook.com/pixy/messages/?business_id=' + config.facebook.businessId + '&mid=' +envelope.sender.id+ '&timestamp=' + envelope.timestamp;
+    var userMessage = envelope.message.text;
+    var userMessageURL = 'https://business.facebook.com/pixy/messages/?business_id=' + config.facebook.businessId + '&mid=' +envelope.sender.id+ '&timestamp=' + envelope.timestamp;
 
     var subject = '[Messenger bot] ' + name + ' might need some help';
     var message = 'This message was received via chat and wasn\'t recognised...<br><br>';
@@ -373,8 +373,8 @@ function notifyPixySupportEmail(user, envelope) {
     message += '<b>Pixy ID:</b> '+ userId + '<br>';
     message += '<b>Time:</b> '+  moment().format('MMMM Do YYYY, h:mm:ss a') + '<br><br>';
 
-    message += '<b>Message:</b> '+ message + '<br><br>';
-    message += '<a href="' + messageURL + '">View conversation</a>';
+    message += '<b>Message:</b> '+ userMessage + '<br><br>';
+    message += '<a href="' + userMessageURL + '">View conversation</a>';
 
     logger.info('FB Messenger: Sending email to ' + toEmail + '.');
 
