@@ -11,7 +11,7 @@ var path = require('path');
 var graphicsMagick = require('gm');
 var common = require('evergram-common');
 var config = require('../../../config');
-var trackingManager = require('../tracking');
+var trackingManager = require('../../../tracking');
 var printManager = common.print.manager;
 var userManager = common.user.manager;
 var imageManager = common.image.manager;
@@ -85,8 +85,8 @@ function processPrintableImageSet(user, printableImageSet, images) {
     /**
      * Track the images
      */
-    if (images.length > 0 && (!!config.track && config.track !== 'false' && config.track !== false)) {
-        trackingManager.trackTaggedImages(user, printableImageSet, images);
+    if (images.length > 0) {
+        trackingManager.trackUploadedImages(user, printableImageSet, images);
     }
 
     /**
@@ -106,7 +106,7 @@ function processPrintableImageSet(user, printableImageSet, images) {
          */
         printManager.save(printableImageSet).
         then(function() {
-            deferred.resolve();
+            deferred.resolve(printableImageSet);
         });
     });
 

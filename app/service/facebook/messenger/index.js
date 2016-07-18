@@ -10,7 +10,6 @@ var moment = require('moment');
 var q = require('q');
 var common = require('evergram-common');
 var config = require('../../../config');
-var trackingManager = require('../tracking');
 var emailManager = common.email.manager;
 var userManager = common.user.manager;
 var logger = common.utils.logger;
@@ -204,10 +203,8 @@ function processPhotoMessage(envelope,user) {
     imagesetManager.saveImages(user,images).
     then(function(imageset) {
 
-        // TODO: printableImageSet is currently undefined. Need to update imagesets/index.js if we want to get the photo count for response message.
-        
         logger.info('FB Messenger: Images successfully saved for user ' + user.getUsername());
-
+        
         // inject any variables into text & URLs if required
         var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, getMergeFields(user, envelope, imageset)); 
         deferred.resolve(response);
