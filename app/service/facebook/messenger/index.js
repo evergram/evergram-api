@@ -177,25 +177,27 @@ function processPhotoMessage(envelope,user) {
     logger.info("FB Messenger: Processing photo");
 
     // for each image in attachements   - ### TODO: COULD BE ASYNC ISSUES WITH THIS???
-    _.forEach(envelope.message.attachments, function(attachment) {
+    //_.forEach(envelope.message.attachments, function(attachment) {
+    for(var i=0; i<envelope.message.attachments; i++) {
         // skip video & audio
-        if(attachment.type === 'image') {
+        if(envelope.message.attachments[i].type === 'image') {
             logger.info('FB Messenger: processing image attachment.');
 
             var data = {
                 mid: envelope.message.mid,
                 timestamp: envelope.timestamp,
-                attachment: attachment
+                attachment: envelope.message.attachments[i]
             }
 
             var image = facebookImageMapper.toModel(data, user);
             images.push(image);
         } else {
             // ignore
-            logger.info('FB Messenger: attachment of type ' + attachment.type + ' ignored.');
+            logger.info('FB Messenger: attachment of type ' + envelope.message.attachments[i].type + ' ignored.');
             // TODO: should probably send a friendly response (e.g. we don't print videos yo!)
         }
-    });
+    }
+    //});
 
     logger.info('FB Messenger: Saving ' + envelope.message.attachments.length + ' photo(s)');
 

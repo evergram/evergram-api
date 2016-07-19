@@ -136,7 +136,7 @@ function saveImagesToS3(user, images, printableImageSet, service) {
             var imgDeferred = q.defer();
             imagesDeferred.push(imgDeferred.promise);
 
-            var imgFileName = user.facebook.id + '_' + path.basename(image.src.raw).split('?')[0];
+            var imgFileName = user.getUsername() + '_' + path.basename(image.src.raw).split('?')[0];
             var localFilepath;
             var s3Filepath;
 
