@@ -178,7 +178,8 @@ function processPhotoMessage(envelope,user) {
 
     // for each image in attachements   - ### TODO: COULD BE ASYNC ISSUES WITH THIS???
     //_.forEach(envelope.message.attachments, function(attachment) {
-    for(var i=0; i<envelope.message.attachments; i++) {
+    for(var i=0; i<envelope.message.attachments.length; i++) {
+        logger.info(JSON.stringify('###'+ envelope.message.attachments[i]));
         // skip video & audio
         if(envelope.message.attachments[i].type === 'image') {
             logger.info('FB Messenger: processing image attachment.');
