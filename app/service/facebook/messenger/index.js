@@ -343,7 +343,11 @@ function replaceMergeFields(response, mergeFields) {
  */
 function getMergeFields(user, envelope, imageset) {
 
-    logger.info('### ***** getMergeFields USER IS: ' + user._id + ', name = ' + user.firstName);
+    if (user)
+        logger.info('### ***** getMergeFields USER IS: ' + user._id + ', name = ' + user.firstName);
+    else
+        logger.info('### ***** getMergeFields USER IS: No user');
+    
     var mergeFields = [];
 
     // Set merge fields to merge into message and URLS in case required.
