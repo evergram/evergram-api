@@ -144,12 +144,12 @@ function processPostback(envelope) {
                 response = config.facebook.messengerResponses.PHOTO_UPLOAD.DEFAULT;
             }
 
-            logger.info('### ***** POSTBACK USER IS: ' + !!user ? user._id : 'null' + ' , name = ' + !!user ? user.firstName : 'null');
+            logger.info('### ***** POSTBACK USER IS: ' + (!!user ? user._id : 'null') + ' , name = ' + (!!user ? user.firstName : 'null'));
 
             // inject any variables into text & URLs if required
             response = replaceMergeFields(response, getMergeFields(user, envelope, null));
             
-            logger.info('### ***** POSTBACK USER IS Now: ' + !!user ? user._id : 'null' + ' , name = ' + !!user ? user.firstName : 'null');
+            logger.info('### ***** POSTBACK USER IS Now: ' + (!!user ? user._id : 'null') + ' , name = ' + (!!user ? user.firstName : 'null'));
 
             sendResponse(envelope.sender.id, response);
 
