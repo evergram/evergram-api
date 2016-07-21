@@ -63,7 +63,8 @@ function processMessage(envelope) {
                 logger.info("FB Messenger: User not found");
                 // Not a pixy user, respond with a message prompting to signup or connet their account?
                 var response = config.facebook.messengerResponses.ERROR.USER_NOT_FOUND || config.facebook.messengerResponses.ERROR.DEFAULT;
-                response = replaceMergeFields(response, getMergeFields(user, envelope, null));
+                //response = replaceMergeFields(response, getMergeFields(user, envelope, null));
+                response = replaceMergeFields(response, user, envelope, null);
 
                 sendResponse(envelope.sender.id, response);
                 return deferred.resolve();
@@ -147,7 +148,8 @@ function processPostback(envelope) {
             logger.info('### ***** POSTBACK USER IS: ' + (!!user ? user._id : 'null') + ' , name = ' + (!!user ? user.firstName : 'null'));
 
             // inject any variables into text & URLs if required
-            response = replaceMergeFields(response, getMergeFields(user, envelope, null));
+            //response = replaceMergeFields(response, getMergeFields(user, envelope, null));
+            response = replaceMergeFields(response, user, envelope, null);
             
             logger.info('### ***** POSTBACK USER IS Now: ' + (!!user ? user._id : 'null') + ' , name = ' + (!!user ? user.firstName : 'null'));
 
@@ -213,12 +215,14 @@ function processPhotoMessage(envelope,user) {
         logger.info('FB Messenger: Images successfully saved for user ' + user.getUsername());
         
         // inject any variables into text & URLs if required
-        var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, getMergeFields(user, envelope, imageset)); 
+        //var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, getMergeFields(user, envelope, imageset));
+        var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, user, envelope, imageset);
         deferred.resolve(response);
 
     }).fail(function(err) {
         logger.error('FB Messenger: Failed to save image for user (id:' + user._id + ') - ' + err);
-        var response = replaceMergeFields(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, getMergeFields(user, envelope, null));
+        //var response = replaceMergeFields(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, getMergeFields(user, envelope, null));
+        var response = replaceMergeFields(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, user, envelope, null);
         deferred.reject(response);
     });
 
@@ -280,7 +284,8 @@ function processTextMessage(envelope, user) {
     }
 
     // inject any variables into text & URLs if required
-    response = replaceMergeFields(response, getMergeFields(user, envelope, null));
+    //response = replaceMergeFields(response, getMergeFields(user, envelope, null));
+    response = replaceMergeFields(response, user, envelope, null);
 
     sendResponse(envelope.sender.id, response);
 }
@@ -318,23 +323,29 @@ Messenger.prototype.sendResponse = sendResponse
 /**
  * Replace any of the custom fields with user data.
  */
-function replaceMergeFields(response, mergeFields) {
+//function replaceMergeFields(response, mergeFields) {
+function replaceMergeFields(response, user, envelope, imageset) {
+
+    var messengerId = envelope.sender.id;
+    var userId = !!user ? user._id : '';
+    var firstName = !!user ? user.firstName : '';
+    var photoCount = !!imageset ? imageset.images.length : '';
 
     if (response.template === 'button') {
 
-        response.message.attachment.payload.text = response.message.attachment.payload.text.replace('{{firstName}}', mergeFields['firstName']);
-        response.message.attachment.payload.text = response.message.attachment.payload.text.replace('{{photo-count}}', mergeFields['photoCount']);
+        response.message.attachment.payload.text = response.message.attachment.payload.text.replace('{{firstName}}', firstName);
+        response.message.attachment.payload.text = response.message.attachment.payload.text.replace('{{photo-count}}', photoCount);
 
         for (var i=0; i<response.message.attachment.payload.buttons.length; i++) {
             logger.info(i + ': ' + JSON.stringify(response.message.attachment.payload.buttons[i]));
             if (!!response.message.attachment.payload.buttons[i].url) {
-                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{messengerId}}', mergeFields['messengerId']);
-                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{userId}}', mergeFields['userId']);
+                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{messengerId}}', messengerId);
+                response.message.attachment.payload.buttons[i].url = response.message.attachment.payload.buttons[i].url.replace('{{userId}}', userId);
             }
         }
     } else {
-        response.message.text = response.message.text.replace('{{firstName}}', mergeFields['firstName']);
-        response.message.text = response.message.text.replace('{{photo-count}}', mergeFields['photoCount']);
+        response.message.text = response.message.text.replace('{{firstName}}', firstName);
+        response.message.text = response.message.text.replace('{{photo-count}}', photoCount);
     }
     logger.info('RESPONSE: ' + JSON.stringify(response));
     return response;
