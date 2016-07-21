@@ -144,9 +144,11 @@ function processPostback(envelope) {
                 response = config.facebook.messengerResponses.PHOTO_UPLOAD.DEFAULT;
             }
 
+            logger.info('### ***** POSTBACK USER IS: ' + user._id + ', name = ' + user.firstName);
+
             // inject any variables into text & URLs if required
             response = replaceMergeFields(response, getMergeFields(user, envelope, null));
-
+logger.info('### ***** POSTBACK USER IS Now: ' + user._id + ', name = ' + user.firstName);
             sendResponse(envelope.sender.id, response);
 
             return deferred.resolve();
@@ -341,6 +343,7 @@ function replaceMergeFields(response, mergeFields) {
  */
 function getMergeFields(user, envelope, imageset) {
 
+    logger.info('### ***** getMergeFields USER IS: ' + user._id + ', name = ' + user.firstName);
     var mergeFields = [];
 
     // Set merge fields to merge into message and URLS in case required.
@@ -348,6 +351,8 @@ function getMergeFields(user, envelope, imageset) {
     mergeFields['userId'] = !!user ? user._id : '';
     mergeFields['firstName'] = !!user ? user.firstName : '';
     mergeFields['photoCount'] = !!imageset ? imageset.images.length : '';
+
+    logger.info('### ***** getMergeFields[userId] = ' + mergeFields['userId']);
 
     return mergeFields;
 }

@@ -6,3 +6,5 @@
 /shippable
 /coverage
 xunit.xml
+/opsworks-ssh.key.pub
+/opsworks-ssh.key
