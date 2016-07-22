@@ -221,13 +221,13 @@ function processPhotoMessage(envelope,user) {
         
         // inject any variables into text & URLs if required
         //var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, getMergeFields(user, envelope, imageset));
-        response = replaceMergeFields(_.cloneDeep(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, user, envelope, imageset));
+        response = replaceMergeFields(_.cloneDeep(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE), user, envelope, imageset);
         deferred.resolve(response);
 
     }).fail(function(err) {
         logger.error('FB Messenger: Failed to save image for user (id:' + user._id + ') - ' + err);
         //var response = replaceMergeFields(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, getMergeFields(user, envelope, null));
-        response = replaceMergeFields(_.cloneDeep(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, user, envelope, null));
+        response = replaceMergeFields(_.cloneDeep(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED), user, envelope, null);
         deferred.reject(response);
     });
 
