@@ -326,6 +326,20 @@ Messenger.prototype.sendResponse = sendResponse
 //function replaceMergeFields(response, mergeFields) {
 function replaceMergeFields(response, user, envelope, imageset) {
 
+    logger.info('');
+    logger.info('');
+    logger.info('');
+    logger.info('******************************************************');
+    logger.info('****** replaceMergeFields RESPONSE: ' + JSON.stringify(response));
+    logger.info('');
+    logger.info('****** replaceMergeFields USER: ' + JSON.stringify(user));
+    logger.info('');
+    logger.info('****** replaceMergeFields ENVELOPE: ' + JSON.stringify(envelope));
+    logger.info('');
+    logger.info('****** replaceMergeFields IMAGESET: ' + JSON.stringify(imageset));
+    logger.info('');
+
+
     var messengerId = envelope.sender.id;
     var userId = !!user ? user._id : '';
     var firstName = !!user ? user.firstName : '';
@@ -347,7 +361,10 @@ function replaceMergeFields(response, user, envelope, imageset) {
         response.message.text = response.message.text.replace('{{firstName}}', firstName);
         response.message.text = response.message.text.replace('{{photo-count}}', photoCount);
     }
-    logger.info('RESPONSE: ' + JSON.stringify(response));
+    logger.info('****** RESPONSE: ' + JSON.stringify(response));
+    logger.info('');
+    logger.info('');
+    logger.info('');
     return response;
 }
 
@@ -361,7 +378,7 @@ function getMergeFields(user, envelope, imageset) {
     else
         logger.info('### ***** getMergeFields USER IS: No user');
 
-    var mergeFields = [];
+    var mergeFields = {};
 
     // Set merge fields to merge into message and URLS in case required.
     mergeFields['messengerId'] = envelope.sender.id;
