@@ -31,6 +31,8 @@ function Messenger() {
 function processMessage(envelope) {
     var deferred = q.defer();
 
+    var response = '';
+
     logger.info('FB Messenger: Processing Message');
 
     // Check this is a Pixy user (mid === facebook.messengerId)
@@ -62,7 +64,7 @@ function processMessage(envelope) {
             if(!user) {
                 logger.info("FB Messenger: User not found");
                 // Not a pixy user, respond with a message prompting to signup or connet their account?
-                var response = config.facebook.messengerResponses.ERROR.USER_NOT_FOUND || config.facebook.messengerResponses.ERROR.DEFAULT;
+                response = _.cloneDeep(config.facebook.messengerResponses.ERROR.USER_NOT_FOUND || config.facebook.messengerResponses.ERROR.DEFAULT);
                 //response = replaceMergeFields(response, getMergeFields(user, envelope, null));
                 response = replaceMergeFields(response, user, envelope, null);
 
@@ -106,6 +108,8 @@ Messenger.prototype.processMessage = processMessage
 function processPostback(envelope) {
     var deferred = q.defer();
 
+    var response = '';
+
     logger.info("FB Messenger: Type is Postback");
 
     logger.info("FB Messenger: processPostback payload = " + envelope.postback.payload);
@@ -127,22 +131,21 @@ function processPostback(envelope) {
          * - HELP.REQUEST
          */
         if(!!envelope.postback.payload) { // 
-            var response;
 
             if (envelope.postback.payload === 'MENU') {
                 // If a pixy user, respond with logged in menu, else respond with logged out menu
-                response = !!user ? config.facebook.messengerResponses.MENU.LOGGED_IN : config.facebook.messengerResponses.MENU.DEFAULT;
+                response = _.cloneDeep(!!user ? config.facebook.messengerResponses.MENU.LOGGED_IN : config.facebook.messengerResponses.MENU.DEFAULT);
             } else if (envelope.postback.payload === 'SIGNUP_COMPLETE') {
                 // If a pixy user, respond with signup complete message, else respond with error
-                response = !!user ? config.facebook.messengerResponses.SIGNUP_COMPLETE.DEFAULT : config.facebook.messengerResponses.ERROR.DEFAULT;
+                response = _.cloneDeep(!!user ? config.facebook.messengerResponses.SIGNUP_COMPLETE.DEFAULT : config.facebook.messengerResponses.ERROR.DEFAULT);
             } else if (envelope.postback.payload === 'GET_STARTED') {
-                response = config.facebook.messengerResponses.GET_STARTED.DEFAULT;
+                response = _.cloneDeep(config.facebook.messengerResponses.GET_STARTED.DEFAULT);
             } else if (envelope.postback.payload === 'HELP') {
-                response = config.facebook.messengerResponses.HELP.DEFAULT;
+                response = _.cloneDeep(config.facebook.messengerResponses.HELP.DEFAULT);
             } else if (envelope.postback.payload === 'HELP.REQUEST') {
-                response = config.facebook.messengerResponses.HELP.REQUEST;
+                response = _.cloneDeep(config.facebook.messengerResponses.HELP.REQUEST);
             } else if (envelope.postback.payload === 'PHOTO_UPLOAD.START') {
-                response = config.facebook.messengerResponses.PHOTO_UPLOAD.DEFAULT;
+                response = _.cloneDeep(config.facebook.messengerResponses.PHOTO_UPLOAD.DEFAULT);
             }
 
             logger.info('### ***** POSTBACK USER IS: ' + (!!user ? user._id : 'null') + ' , name = ' + (!!user ? user.firstName : 'null'));
@@ -180,6 +183,8 @@ function processPhotoMessage(envelope,user) {
     var images = [];
     var deferred = q.defer();
 
+    var response = '';
+
     logger.info("FB Messenger: Processing photo");
 
     // for each image in attachements   - ### TODO: COULD BE ASYNC ISSUES WITH THIS???
@@ -216,13 +221,13 @@ function processPhotoMessage(envelope,user) {
         
         // inject any variables into text & URLs if required
         //var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, getMergeFields(user, envelope, imageset));
-        var response = replaceMergeFields(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, user, envelope, imageset);
+        response = replaceMergeFields(_.cloneDeep(config.facebook.messengerResponses.PHOTO_UPLOAD.COMPLETE, user, envelope, imageset));
         deferred.resolve(response);
 
     }).fail(function(err) {
         logger.error('FB Messenger: Failed to save image for user (id:' + user._id + ') - ' + err);
         //var response = replaceMergeFields(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, getMergeFields(user, envelope, null));
-        var response = replaceMergeFields(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, user, envelope, null);
+        response = replaceMergeFields(_.cloneDeep(config.facebook.messengerResponses.ERROR.UPLOAD_FAILED, user, envelope, null));
         deferred.reject(response);
     });
 
@@ -237,6 +242,8 @@ function processTextMessage(envelope, user) {
 
     logger.info("FB Messenger: Processing text - " + JSON.stringify(envelope));
 
+    var response = '';
+
     if(!user) {
         logger.info("FB Messenger: User not found");
     } else {
@@ -248,15 +255,14 @@ function processTextMessage(envelope, user) {
      * - HELP
      */
     if(!!envelope.message.text) { // 
-        var response;
 
         if (envelope.message.text.toUpperCase() === 'MENU') {
             logger.info("FB Messenger: MENU requested by user.");
             // check if logged-in
-            response = !!user ? config.facebook.messengerResponses.MENU.LOGGED_IN : config.facebook.messengerResponses.MENU.DEFAULT;
+            response = _.cloneDeep(!!user ? config.facebook.messengerResponses.MENU.LOGGED_IN : config.facebook.messengerResponses.MENU.DEFAULT);
         } else if (envelope.message.text.toUpperCase() === 'HELP') {
             logger.info("FB Messenger: HELP menu requested by user.");
-            response = config.facebook.messengerResponses.HELP.DEFAULT;
+            response = _.cloneDeep(config.facebook.messengerResponses.HELP.DEFAULT);
         } else {
             // user has said something other than a menu option
             logger.info('FB Messenger: Free-text from user - ' + envelope.message.text);
@@ -266,7 +272,7 @@ function processTextMessage(envelope, user) {
                 (envelope.message.text.toUpperCase() === 'HEY')) {
 
                 // check if logged-in
-                response = !!user ? config.facebook.messengerResponses.GREETING.LOGGED_IN : config.facebook.messengerResponses.GREETING.DEFAULT;
+                response = _.cloneDeep(!!user ? config.facebook.messengerResponses.GREETING.LOGGED_IN : config.facebook.messengerResponses.GREETING.DEFAULT);
             } else {
                 // respond with a helpful message... COMMENTED THIS OUT AS IT FELT WEIRD
                 //response = config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT;
