@@ -55,7 +55,45 @@ module.exports = {
 						    	{
 						    		type: 'web_url',
 						    		title: 'Connect your account',
-						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}'
+						    		url: 'https://secure.printwithpixy.com/#/connect?mid={{messengerId}}'
+						    	}]
+							}
+						}
+				    }
+			    },
+			    'LOGGED_IN': {
+			    	template: 'button',
+			    	response_id: 'GET_STARTED.LOGGED_IN',
+			    	message: {
+			    		attachment: {
+							type:'template',
+							payload: {
+								template_type:'button',
+								text:"Welcome to Pixy, the easiest way to print your photos.\n" +
+										"\n" +
+										"How Pixy works:\n" +
+										"1. Signup/Connect your Pixy account.\n" +
+										"2. Send us your photos, right here in messenger.\n" +
+										"3. We print & send your photos at the end of the month.\n" +
+										"\n" +
+										"To get started, choose an option below.\n" +
+										"\n" +
+										"Need help? Just text us MENU to see more options. :)",
+								buttons:[
+								{
+						    		type: 'web_url',
+						    		title: 'Find out more',
+						    		url: 'http://www.printwithpixy.com/?mid={{messengerId}}'
+						    	},
+						    	{
+						    		type: 'web_url',
+						    		title: 'Signup',
+						    		url: 'http://www.printwithpixy.com/choose-a-plan?mid={{messengerId}}'
+						    	},
+						    	{
+						    		type: 'web_url',
+						    		title: 'Connect your account',
+						    		url: 'https://secure.printwithpixy.com/#/connect?mid={{messengerId}}'
 						    	}]
 							}
 						}
@@ -117,6 +155,41 @@ module.exports = {
 				    }
 				}
 			},
+			'SIGNUP_COMPLETE': {
+				'DEFAULT': {
+					template: 'button',
+			    	response_id: 'SIGNUP_COMPLETE',
+			    	message: {
+			    		attachment: {
+							type:'template',
+							payload: {
+								template_type:'button',
+								text:"Great work {{firstName}}! Your Pixy account is now connected to Messenger.\n" +
+										"\n" +
+										"* To upload photos, send them to us in this chat and we'll add them to your next order.\n" +
+										"* Text us the word MENU at any time to see options.\n" +
+										"* Need help, just text HELP to talk to a real person (I'm just a friendly robot). :)\n",
+								buttons:[
+								{
+						    		type: 'postback',
+						    		payload: 'PHOTO_UPLOAD.START',
+						    		title: 'Upload photos'
+						    	},
+						    	{
+						    		type: 'web_url',
+						    		url: 'https://secure.printwithpixy.com/#/my-account?id={{userId}}',
+						    		title: 'View your order'
+						    	},
+						    	{
+						    		type: 'postback',
+						    		payload: 'HELP',
+						    		title: 'Get help'
+						    	}]
+							}
+						}
+				    }
+				}
+			},
 			'MENU': {
 				'DEFAULT': {
 			    	template: 'button',
@@ -126,7 +199,7 @@ module.exports = {
 							type:'template',
 							payload: {
 								template_type:'button',
-								text:"Hi there. To use Pixy, please signup or connect your Pixy account.\n" +
+								text:"Hi there. To use Pixy, please signup or connect to your Pixy account.\n" +
 										"\n" +
 										"* To upload photos, send them to us in this chat and we'll add them to your next order.\n" +
 										"* Text us the word MENU at any time to see options.\n" +
@@ -139,7 +212,7 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}',
+						    		url: 'https://secure.printwithpixy.com/#/connect?mid={{messengerId}}',
 						    		title: 'Connect your account'
 						    	},
 						    	{
@@ -159,11 +232,7 @@ module.exports = {
 							type:'template',
 							payload: {
 								template_type:'button',
-								text:"Great work {{firstName}}! Your Pixy account is now connected to Messenger.\n" +
-										"\n" +
-										"* To upload photos, send them to us in this chat and we'll add them to your next order.\n" +
-										"* Text us the word MENU at any time to see options.\n" +
-										"* Need help, just text HELP and a real person will be in-touch (I'm just a friendly robot). :)\n",
+								text:"Main menu...",
 								buttons:[
 								{
 						    		type: 'postback',
@@ -243,30 +312,18 @@ module.exports = {
 								{
 						    		type: 'postback',
 						    		payload: 'HELP.REQUEST',
-						    		title: 'Contact us'
+						    		title: 'Ask a question'
 						    	}]
 							}
 						}
 				    }
 			    },
 		    	'REQUEST': {
-			    	template: 'button',
+			    	template: 'text',
 			    	response_id: 'HELP.REQUEST',
 			    	message: {
-			    		attachment: {
-							type:'template',
-							payload: {
-								template_type:'button',
-								text:"Need some help? No problem. Just send an email and one of our friendly Pixy staff will be in-touch.",
-								buttons:[								
-								{
-						    		type: 'web_url',
-						    		url: 'mailto:help@printwithpixy.com',
-						    		title: 'Email us'
-						    	}]
-							}
-						}
-				    }
+			    		text: "How can we help? Just ask a question and one of our team will help you out."
+					}
 			    },
 		    	'REQUEST_SENT': {
 			    	template: 'text',
@@ -313,8 +370,8 @@ module.exports = {
 						    	},
 						    	{
 						    		type: 'web_url',
-						    		url: 'https://secure.printwithpixy.com/#/connect?service=messenger&mid={{messengerId}}',
-						    		title: 'Connect your Pixy account'
+						    		url: 'https://secure.printwithpixy.com/#/connect?mid={{messengerId}}',
+						    		title: 'Connect your account'
 						    	}]
 							}
 						}

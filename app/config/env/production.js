@@ -319,23 +319,11 @@ module.exports = {
 				    }
 			    },
 		    	'REQUEST': {
-			    	template: 'button',
+			    	template: 'text',
 			    	response_id: 'HELP.REQUEST',
 			    	message: {
-			    		attachment: {
-							type:'template',
-							payload: {
-								template_type:'button',
-								text:"Need some help? No problem. Just send an email and one of our friendly Pixy staff will be in-touch.",
-								buttons:[								
-								{
-						    		type: 'web_url',
-						    		url: 'mailto:help@printwithpixy.com',
-						    		title: 'Email us'
-						    	}]
-							}
-						}
-				    }
+			    		text: "How can we help? Just ask a question and one of our team will help you out."
+					}
 			    },
 		    	'REQUEST_SENT': {
 			    	template: 'text',
