@@ -274,8 +274,8 @@ function processTextMessage(envelope, user) {
                 // check if logged-in
                 response = _.cloneDeep(!!user ? config.facebook.messengerResponses.GREETING.LOGGED_IN : config.facebook.messengerResponses.GREETING.DEFAULT);
             } else {
-                // respond with a helpful message... COMMENTED THIS OUT AS IT FELT WEIRD
-                //response = config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT;
+                // respond with a helpful message...
+                response = _.cloneDeep(!!user ? config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT_LOGGED_IN : config.facebook.messengerResponses.ERROR.UNKNOWN_INPUT_LOGGED_OUT);
 
                 // notify us the user has said something that might need our help
                 notifyPixySupportEmail(user, envelope);
@@ -293,9 +293,9 @@ function processTextMessage(envelope, user) {
     //response = replaceMergeFields(response, getMergeFields(user, envelope, null));
     if (response != '') {
         response = replaceMergeFields(response, user, envelope, null);
+        sendResponse(envelope.sender.id, response);
     }
 
-    sendResponse(envelope.sender.id, response);
 }
 
 
