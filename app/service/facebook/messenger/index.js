@@ -291,7 +291,9 @@ function processTextMessage(envelope, user) {
 
     // inject any variables into text & URLs if required
     //response = replaceMergeFields(response, getMergeFields(user, envelope, null));
-    response = replaceMergeFields(response, user, envelope, null);
+    if (response != '') {
+        response = replaceMergeFields(response, user, envelope, null);
+    }
 
     sendResponse(envelope.sender.id, response);
 }
@@ -324,7 +326,7 @@ function sendResponse(recipient,data) {
     });
 }
 
-Messenger.prototype.sendResponse = sendResponse
+Messenger.prototype.sendResponse = sendResponse;
 
 /**
  * Replace any of the custom fields with user data.
